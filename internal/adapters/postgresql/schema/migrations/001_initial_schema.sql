@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE users (
@@ -74,3 +75,21 @@ CREATE INDEX idx_organization_members_user_id ON organization_members(user_id);
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX idx_audit_logs_organization_id ON audit_logs(organization_id);
 CREATE INDEX idx_audit_logs_resource_id ON audit_logs(resource_id);
+
+-- +goose Down
+DROP INDEX IF EXISTS idx_audit_logs_resource_id;
+DROP INDEX IF EXISTS idx_audit_logs_organization_id;
+DROP INDEX IF EXISTS idx_audit_logs_user_id;
+DROP INDEX IF EXISTS idx_organization_members_user_id;
+DROP INDEX IF EXISTS idx_organizations_name;
+DROP INDEX IF EXISTS idx_users_created_at;
+
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS variables;
+DROP TABLE IF EXISTS environments;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS organization_members;
+DROP TABLE IF EXISTS organizations;
+DROP TABLE IF EXISTS users;
+
+DROP EXTENSION IF EXISTS "uuid-ossp";
