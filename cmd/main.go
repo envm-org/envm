@@ -1,26 +1,55 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
-	"github.com/envm-org/envm/internal/config"
+	"github.com/envm-org/envm/pkg/env"
+	"github.com/jackc/pgx/v5"
 )
 
 
-func main() {
+type Config struct {
+	DatabaseURI string
+	Addr        string
+	DB          DBConfig
+}
 
-	cfg := config.Config {
-		DatabaseURI: "",
+type DBConfig struct {
+	DSN string
+}
+
+
+func main() {
+	ctx := context.Background()
+
+
+	cfg := Config {
+		DatabaseURI: env.GetString("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/envm"),
 		Addr : ":8080",
 	}
-
-	api := application {
-		config: cfg,
-	}
-
+	cfg.DB.DSN = cfg.DatabaseURI
+	
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+	
+	
+	// database connection
+	conn, err := pgx.Connect(ctx, cfg.DB.DSN)
+	if err != nil {
+		logger.Error("failed to connect to database", "error", err)
+		panic(err)
+	}
+	defer conn.Close(ctx)
+	
+	logger.Info("database connection successful")
+	
+	
+	api := application {
+		config: cfg,
+		db: conn,
+	}
 
 
 	h := api.mount()

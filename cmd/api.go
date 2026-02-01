@@ -5,18 +5,20 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/envm-org/envm/internal/config"
+	repo "github.com/envm-org/envm/internal/adapters/postgresql/sqlc"
 	"github.com/envm-org/envm/internal/env"
+	"github.com/envm-org/envm/internal/org"
+	"github.com/envm-org/envm/internal/project"
+	"github.com/envm-org/envm/internal/users"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5"
 )
 
 
 type application struct {
-	config config.Config
-// logger 
-// db drivers 
-	
+	config Config
+	db     *pgx.Conn
 }
 
 func (app *application) mount() http.Handler {
@@ -33,11 +35,52 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte("envm api is running on port " + app.config.Addr))
 	})
 
-	envHandler := env.NewHandler(nil)
-	r.Post("/env", envHandler.CreateEnv)
-	r.Get("/env", envHandler.GetEnv)
-	r.Put("/env", envHandler.UpdateEnv)
-	r.Delete("/env", envHandler.DeleteEnv)
+	q := repo.New(app.db)
+
+	// Env
+	envService := env.NewService(q)
+	envHandler := env.NewHandler(envService)
+	r.Route("/env", func(r chi.Router) {
+		r.Post("/", envHandler.CreateEnv)
+		r.Get("/", envHandler.GetEnv)
+		r.Put("/", envHandler.UpdateEnv)
+		r.Delete("/", envHandler.DeleteEnv)
+		r.Get("/list", envHandler.ListEnvs)
+	})
+
+	// Project
+	projectService := project.NewService(q)
+	projectHandler := project.NewHandler(projectService)
+	r.Route("/project", func(r chi.Router) {
+		r.Post("/", projectHandler.CreateProject)
+		r.Get("/", projectHandler.GetProject)
+		r.Put("/", projectHandler.UpdateProject)
+		r.Delete("/", projectHandler.DeleteProject)
+		r.Get("/list", projectHandler.ListProjects)
+	})
+
+	// Org
+	orgService := org.NewService(q)
+	orgHandler := org.NewHandler(orgService)
+	r.Route("/org", func(r chi.Router) {
+		r.Post("/", orgHandler.CreateOrg)
+		r.Get("/", orgHandler.GetOrg)
+		r.Put("/", orgHandler.UpdateOrg)
+		r.Delete("/", orgHandler.DeleteOrg)
+		r.Get("/list", orgHandler.ListOrgs)
+	})
+
+	// Users
+	usersService := users.NewService(q)
+	usersHandler := users.NewHandler(usersService)
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/", usersHandler.CreateUser)
+		r.Get("/", usersHandler.GetUser)
+		r.Put("/", usersHandler.UpdateUser)
+		r.Delete("/", usersHandler.DeleteUser)
+		r.Get("/list", usersHandler.ListUsers)
+		r.Get("/email", usersHandler.GetUserByEmail)
+	})
 
 	return r
 }
