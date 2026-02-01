@@ -47,6 +47,10 @@ INSERT INTO environments (project_id, name, slug)
 VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: GetEnvironment :one
+SELECT * FROM environments
+WHERE id = $1 LIMIT 1;
+
 -- name: ListEnvironments :many
 SELECT * FROM environments
 WHERE project_id = $1

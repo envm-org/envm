@@ -1,7 +1,13 @@
 package logger
 
-import "fmt"
+import (
+	"log/slog"
+	"os"
+)
 
-func Logger() {
-	fmt.Println("logger")
+func Logger() *slog.Logger {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
+	return logger
 }

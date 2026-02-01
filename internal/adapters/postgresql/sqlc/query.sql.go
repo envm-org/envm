@@ -206,6 +206,25 @@ func (q *Queries) DeleteVariable(ctx context.Context, arg DeleteVariableParams) 
 	return err
 }
 
+const getEnvironment = `-- name: GetEnvironment :one
+SELECT id, project_id, name, slug, created_at, updated_at FROM environments
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetEnvironment(ctx context.Context, id pgtype.UUID) (Environment, error) {
+	row := q.db.QueryRow(ctx, getEnvironment, id)
+	var i Environment
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Name,
+		&i.Slug,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getOrganization = `-- name: GetOrganization :one
 SELECT id, name, slug, created_at, updated_at FROM organizations
 WHERE id = $1 LIMIT 1

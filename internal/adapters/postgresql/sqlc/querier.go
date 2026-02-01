@@ -18,6 +18,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVariable(ctx context.Context, arg CreateVariableParams) (Variable, error)
 	DeleteVariable(ctx context.Context, arg DeleteVariableParams) error
+	GetEnvironment(ctx context.Context, id pgtype.UUID) (Environment, error)
 	GetOrganization(ctx context.Context, id pgtype.UUID) (Organization, error)
 	GetProject(ctx context.Context, id pgtype.UUID) (Project, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
