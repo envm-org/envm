@@ -15,6 +15,16 @@ WHERE email = $1 LIMIT 1;
 SELECT * FROM users
 ORDER BY created_at DESC;
 
+-- name: UpdateUser :one
+UPDATE users
+SET email = $2, password_hash = $3, full_name = $4, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1;
+
 -- name: CreateOrganization :one
 INSERT INTO organizations (name, slug)
 VALUES ($1, $2)
@@ -27,6 +37,16 @@ WHERE id = $1 LIMIT 1;
 -- name: ListOrganizations :many
 SELECT * FROM organizations
 ORDER BY name;
+
+-- name: UpdateOrganization :one
+UPDATE organizations
+SET name = $2, slug = $3, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteOrganization :exec
+DELETE FROM organizations
+WHERE id = $1;
 
 -- name: CreateProject :one
 INSERT INTO projects (organization_id, name, slug, description)
@@ -42,6 +62,16 @@ SELECT * FROM projects
 WHERE organization_id = $1
 ORDER BY name;
 
+-- name: UpdateProject :one
+UPDATE projects
+SET name = $2, slug = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteProject :exec
+DELETE FROM projects
+WHERE id = $1;
+
 -- name: CreateEnvironment :one
 INSERT INTO environments (project_id, name, slug)
 VALUES ($1, $2, $3)
@@ -55,6 +85,16 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM environments
 WHERE project_id = $1
 ORDER BY name;
+
+-- name: UpdateEnvironment :one
+UPDATE environments
+SET name = $2, slug = $3, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteEnvironment :exec
+DELETE FROM environments
+WHERE id = $1;
 
 -- name: CreateVariable :one
 INSERT INTO variables (environment_id, key, value, is_secret)

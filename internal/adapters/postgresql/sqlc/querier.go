@@ -17,6 +17,10 @@ type Querier interface {
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVariable(ctx context.Context, arg CreateVariableParams) (Variable, error)
+	DeleteEnvironment(ctx context.Context, id pgtype.UUID) error
+	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
+	DeleteProject(ctx context.Context, id pgtype.UUID) error
+	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	DeleteVariable(ctx context.Context, arg DeleteVariableParams) error
 	GetEnvironment(ctx context.Context, id pgtype.UUID) (Environment, error)
 	GetOrganization(ctx context.Context, id pgtype.UUID) (Organization, error)
@@ -28,6 +32,10 @@ type Querier interface {
 	ListProjects(ctx context.Context, organizationID pgtype.UUID) ([]Project, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	ListVariables(ctx context.Context, environmentID pgtype.UUID) ([]Variable, error)
+	UpdateEnvironment(ctx context.Context, arg UpdateEnvironmentParams) (Environment, error)
+	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
+	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateVariable(ctx context.Context, arg UpdateVariableParams) (Variable, error)
 }
 

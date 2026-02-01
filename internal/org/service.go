@@ -12,6 +12,8 @@ type Service interface {
 	CreateOrg(ctx context.Context, params repo.CreateOrganizationParams) (repo.Organization, error)
 	GetOrg(ctx context.Context, id pgtype.UUID) (repo.Organization, error)
 	ListOrgs(ctx context.Context) ([]repo.Organization, error)
+	UpdateOrg(ctx context.Context, params repo.UpdateOrganizationParams) (repo.Organization, error)
+	DeleteOrg(ctx context.Context, id pgtype.UUID) error
 }
 
 type svc struct {
@@ -32,4 +34,12 @@ func (s *svc) GetOrg(ctx context.Context, id pgtype.UUID) (repo.Organization, er
 
 func (s *svc) ListOrgs(ctx context.Context) ([]repo.Organization, error) {
 	return s.repo.ListOrganizations(ctx)
+}
+
+func (s *svc) UpdateOrg(ctx context.Context, params repo.UpdateOrganizationParams) (repo.Organization, error) {
+	return s.repo.UpdateOrganization(ctx, params)
+}
+
+func (s *svc) DeleteOrg(ctx context.Context, id pgtype.UUID) error {
+	return s.repo.DeleteOrganization(ctx, id)
 }

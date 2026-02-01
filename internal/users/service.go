@@ -13,6 +13,8 @@ type Service interface {
 	GetUser(ctx context.Context, id pgtype.UUID) (repo.User, error)
 	GetUserByEmail(ctx context.Context, email string) (repo.User, error)
 	ListUsers(ctx context.Context) ([]repo.User, error)
+	UpdateUser(ctx context.Context, params repo.UpdateUserParams) (repo.User, error)
+	DeleteUser(ctx context.Context, id pgtype.UUID) error
 }
 
 type svc struct {
@@ -37,4 +39,12 @@ func (s *svc) GetUserByEmail(ctx context.Context, email string) (repo.User, erro
 
 func (s *svc) ListUsers(ctx context.Context) ([]repo.User, error) {
 	return s.repo.ListUsers(ctx)
+}
+
+func (s *svc) UpdateUser(ctx context.Context, params repo.UpdateUserParams) (repo.User, error) {
+	return s.repo.UpdateUser(ctx, params)
+}
+
+func (s *svc) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+	return s.repo.DeleteUser(ctx, id)
 }

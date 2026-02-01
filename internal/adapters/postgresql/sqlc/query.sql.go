@@ -191,6 +191,46 @@ func (q *Queries) CreateVariable(ctx context.Context, arg CreateVariableParams) 
 	return i, err
 }
 
+const deleteEnvironment = `-- name: DeleteEnvironment :exec
+DELETE FROM environments
+WHERE id = $1
+`
+
+func (q *Queries) DeleteEnvironment(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteEnvironment, id)
+	return err
+}
+
+const deleteOrganization = `-- name: DeleteOrganization :exec
+DELETE FROM organizations
+WHERE id = $1
+`
+
+func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteOrganization, id)
+	return err
+}
+
+const deleteProject = `-- name: DeleteProject :exec
+DELETE FROM projects
+WHERE id = $1
+`
+
+func (q *Queries) DeleteProject(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteProject, id)
+	return err
+}
+
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const deleteVariable = `-- name: DeleteVariable :exec
 DELETE FROM variables
 WHERE environment_id = $1 AND key = $2
@@ -463,6 +503,126 @@ func (q *Queries) ListVariables(ctx context.Context, environmentID pgtype.UUID) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateEnvironment = `-- name: UpdateEnvironment :one
+UPDATE environments
+SET name = $2, slug = $3, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, project_id, name, slug, created_at, updated_at
+`
+
+type UpdateEnvironmentParams struct {
+	ID   pgtype.UUID `json:"id"`
+	Name string      `json:"name"`
+	Slug string      `json:"slug"`
+}
+
+func (q *Queries) UpdateEnvironment(ctx context.Context, arg UpdateEnvironmentParams) (Environment, error) {
+	row := q.db.QueryRow(ctx, updateEnvironment, arg.ID, arg.Name, arg.Slug)
+	var i Environment
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Name,
+		&i.Slug,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateOrganization = `-- name: UpdateOrganization :one
+UPDATE organizations
+SET name = $2, slug = $3, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, name, slug, created_at, updated_at
+`
+
+type UpdateOrganizationParams struct {
+	ID   pgtype.UUID `json:"id"`
+	Name string      `json:"name"`
+	Slug string      `json:"slug"`
+}
+
+func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error) {
+	row := q.db.QueryRow(ctx, updateOrganization, arg.ID, arg.Name, arg.Slug)
+	var i Organization
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateProject = `-- name: UpdateProject :one
+UPDATE projects
+SET name = $2, slug = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, organization_id, name, slug, description, created_at, updated_at
+`
+
+type UpdateProjectParams struct {
+	ID          pgtype.UUID `json:"id"`
+	Name        string      `json:"name"`
+	Slug        string      `json:"slug"`
+	Description pgtype.Text `json:"description"`
+}
+
+func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error) {
+	row := q.db.QueryRow(ctx, updateProject,
+		arg.ID,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+	)
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET email = $2, password_hash = $3, full_name = $4, updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, email, password_hash, full_name, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	ID           pgtype.UUID `json:"id"`
+	Email        string      `json:"email"`
+	PasswordHash string      `json:"password_hash"`
+	FullName     string      `json:"full_name"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.Email,
+		arg.PasswordHash,
+		arg.FullName,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.FullName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateVariable = `-- name: UpdateVariable :one

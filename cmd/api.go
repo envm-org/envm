@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/envm-org/envm/internal/config"
+	"github.com/envm-org/envm/internal/env"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -32,9 +33,15 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte("envm api is running on port " + app.config.Addr))
 	})
 
+	envHandler := env.NewHandler(nil)
+	r.Post("/env", envHandler.CreateEnv)
+	r.Get("/env", envHandler.GetEnv)
+	r.Put("/env", envHandler.UpdateEnv)
+	r.Delete("/env", envHandler.DeleteEnv)
+
 	return r
 }
-
+ 
 
 func (app *application) run(h http.Handler) error {
 	server := &http.Server{
