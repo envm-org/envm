@@ -45,12 +45,10 @@ func main() {
 	
 	logger.Info("database connection successful")
 	
-	
 	api := application {
 		config: cfg,
 		db: conn,
 	}
-
 
 	h := api.mount()
 

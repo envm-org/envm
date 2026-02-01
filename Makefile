@@ -12,7 +12,7 @@ DB_DRIVER=postgres
 DB_STRING=$(DATABASE_URI)
 
 build:
-	go build -o bin/$(BINARY_NAME) ./cmd/main.go
+	go build -o bin/$(BINARY_NAME) ./cmd
 
 run: build
 	./bin/$(BINARY_NAME)
