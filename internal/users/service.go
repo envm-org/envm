@@ -2,14 +2,22 @@ package users
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
 	repo "github.com/envm-org/envm/internal/adapters/postgresql/sqlc"
+	"github.com/envm-org/envm/pkg/auth"
 )
 
+type CreateUserParams struct {
+	Email    string
+	Password string
+	FullName string
+}
+
 type Service interface {
-	CreateUser(ctx context.Context, params repo.CreateUserParams) (repo.User, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (repo.User, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (repo.User, error)
 	GetUserByEmail(ctx context.Context, email string) (repo.User, error)
 	ListUsers(ctx context.Context) ([]repo.User, error)
@@ -25,8 +33,17 @@ func NewService(repo *repo.Queries) Service {
 	return &svc{repo: repo}
 }
 
-func (s *svc) CreateUser(ctx context.Context, params repo.CreateUserParams) (repo.User, error) {
-	return s.repo.CreateUser(ctx, params)
+func (s *svc) CreateUser(ctx context.Context, arg CreateUserParams) (repo.User, error) {
+	hashedPassword, err := auth.HashPassword(arg.Password)
+	if err != nil {
+		return repo.User{}, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	return s.repo.CreateUser(ctx, repo.CreateUserParams{
+		Email:        arg.Email,
+		PasswordHash: hashedPassword,
+		FullName:     arg.FullName,
+	})
 }
 
 func (s *svc) GetUser(ctx context.Context, id pgtype.UUID) (repo.User, error) {

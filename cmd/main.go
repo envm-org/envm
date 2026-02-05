@@ -13,6 +13,7 @@ import (
 type Config struct {
 	DatabaseURI string
 	Addr        string
+	TokenSecret string
 	DB          DBConfig
 }
 
@@ -25,9 +26,11 @@ func main() {
 	ctx := context.Background()
 
 
-	cfg := Config {
+	addr := env.GetString("ADDR", ":8080")
+	cfg := Config{
 		DatabaseURI: env.GetString("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/envm"),
-		Addr : ":8080",
+		Addr:        addr,
+		TokenSecret: env.GetString("TOKEN_SECRET", "12345678901234567890123456789012"),
 	}
 	cfg.DB.DSN = cfg.DatabaseURI
 	

@@ -5,16 +5,21 @@ import (
 	"net/http"
 
 	repo "github.com/envm-org/envm/internal/adapters/postgresql/sqlc"
+	"github.com/envm-org/envm/internal/auth"
 	HTTPwriter "github.com/envm-org/envm/pkg/HTTPwriter"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type handler struct {
-	service Service
+	service    Service
+	authorizer auth.Authorizer
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{service: service}
+func NewHandler(service Service, authorizer auth.Authorizer) *handler {
+	return &handler{
+		service:    service,
+		authorizer: authorizer,
+	}
 }
 
 func (h *handler) ListEnvs(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +39,7 @@ func (h *handler) ListEnvs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
 	HTTPwriter.JSON(w, http.StatusOK, envs)
 }
 
@@ -43,6 +49,8 @@ func (h *handler) CreateEnv(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	
 	env, err := h.service.CreateEnv(r.Context(), tempEnv)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -68,6 +76,8 @@ func (h *handler) GetEnv(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
+	
 	HTTPwriter.JSON(w, http.StatusOK, env)
 }
 

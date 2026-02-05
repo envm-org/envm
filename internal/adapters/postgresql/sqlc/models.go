@@ -36,6 +36,17 @@ type Organization struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
+type OrganizationInvitation struct {
+	ID             pgtype.UUID        `json:"id"`
+	OrganizationID pgtype.UUID        `json:"organization_id"`
+	Email          string             `json:"email"`
+	Role           string             `json:"role"`
+	Token          string             `json:"token"`
+	ExpiresAt      pgtype.Timestamptz `json:"expires_at"`
+	InvitedBy      pgtype.UUID        `json:"invited_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type OrganizationMember struct {
 	OrganizationID pgtype.UUID        `json:"organization_id"`
 	UserID         pgtype.UUID        `json:"user_id"`
@@ -53,13 +64,22 @@ type Project struct {
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
+type ProjectMember struct {
+	ProjectID pgtype.UUID        `json:"project_id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	Role      string             `json:"role"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type User struct {
-	ID           pgtype.UUID        `json:"id"`
-	Email        string             `json:"email"`
-	PasswordHash string             `json:"password_hash"`
-	FullName     string             `json:"full_name"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID                     pgtype.UUID        `json:"id"`
+	Email                  string             `json:"email"`
+	PasswordHash           string             `json:"password_hash"`
+	FullName               string             `json:"full_name"`
+	PasswordResetToken     pgtype.Text        `json:"password_reset_token"`
+	PasswordResetExpiresAt pgtype.Timestamptz `json:"password_reset_expires_at"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Variable struct {

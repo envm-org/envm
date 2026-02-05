@@ -10,11 +10,13 @@ import (
 )
 
 type handler struct {
-	service Service
+	service    Service
 }
 
 func NewHandler(service Service) *handler {
-	return &handler{service: service}
+	return &handler{
+		service:    service,
+	}
 }
 
 func (h *handler) ListUsers(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +29,12 @@ func (h *handler) ListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var tempUser repo.CreateUserParams
-	if err := json.NewDecoder(r.Body).Decode(&tempUser); err != nil {
+	var req CreateUserParams
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	user, err := h.service.CreateUser(r.Context(), tempUser)
+	user, err := h.service.CreateUser(r.Context(), req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -11,29 +11,45 @@ import (
 )
 
 type Querier interface {
+	AddOrganizationMember(ctx context.Context, arg AddOrganizationMemberParams) (OrganizationMember, error)
+	AddProjectMember(ctx context.Context, arg AddProjectMemberParams) (ProjectMember, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateEnvironment(ctx context.Context, arg CreateEnvironmentParams) (Environment, error)
+	CreateInvitation(ctx context.Context, arg CreateInvitationParams) (OrganizationInvitation, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVariable(ctx context.Context, arg CreateVariableParams) (Variable, error)
 	DeleteEnvironment(ctx context.Context, id pgtype.UUID) error
+	DeleteInvitation(ctx context.Context, id pgtype.UUID) error
 	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
 	DeleteProject(ctx context.Context, id pgtype.UUID) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	DeleteVariable(ctx context.Context, arg DeleteVariableParams) error
 	GetEnvironment(ctx context.Context, id pgtype.UUID) (Environment, error)
+	GetInvitationByToken(ctx context.Context, token string) (OrganizationInvitation, error)
 	GetOrganization(ctx context.Context, id pgtype.UUID) (Organization, error)
+	GetOrganizationMember(ctx context.Context, arg GetOrganizationMemberParams) (OrganizationMember, error)
 	GetProject(ctx context.Context, id pgtype.UUID) (Project, error)
+	GetProjectMember(ctx context.Context, arg GetProjectMemberParams) (ProjectMember, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByResetToken(ctx context.Context, passwordResetToken pgtype.Text) (User, error)
 	ListEnvironments(ctx context.Context, projectID pgtype.UUID) ([]Environment, error)
+	ListInvitations(ctx context.Context, organizationID pgtype.UUID) ([]OrganizationInvitation, error)
+	ListOrganizationMembers(ctx context.Context, organizationID pgtype.UUID) ([]ListOrganizationMembersRow, error)
 	ListOrganizations(ctx context.Context) ([]Organization, error)
+	ListProjectMembers(ctx context.Context, projectID pgtype.UUID) ([]ListProjectMembersRow, error)
 	ListProjects(ctx context.Context, organizationID pgtype.UUID) ([]Project, error)
+	ListProjectsForMember(ctx context.Context, arg ListProjectsForMemberParams) ([]Project, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	ListVariables(ctx context.Context, environmentID pgtype.UUID) ([]Variable, error)
+	RemoveOrganizationMember(ctx context.Context, arg RemoveOrganizationMemberParams) error
+	RemoveProjectMember(ctx context.Context, arg RemoveProjectMemberParams) error
+	SetPasswordResetToken(ctx context.Context, arg SetPasswordResetTokenParams) error
 	UpdateEnvironment(ctx context.Context, arg UpdateEnvironmentParams) (Environment, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
+	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateVariable(ctx context.Context, arg UpdateVariableParams) (Variable, error)

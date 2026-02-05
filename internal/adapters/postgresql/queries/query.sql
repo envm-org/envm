@@ -60,7 +60,13 @@ WHERE id = $1 LIMIT 1;
 -- name: ListProjects :many
 SELECT * FROM projects
 WHERE organization_id = $1
-ORDER BY name;
+ORDER BY created_at DESC;
+
+-- name: ListProjectsForMember :many
+SELECT p.* FROM projects p
+JOIN project_members pm ON p.id = pm.project_id
+WHERE p.organization_id = $1 AND pm.user_id = $2
+ORDER BY p.created_at DESC;
 
 -- name: UpdateProject :one
 UPDATE projects
@@ -120,3 +126,75 @@ ORDER BY key;
 INSERT INTO audit_logs (user_id, organization_id, action, resource_type, resource_id, details)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
+
+-- name: AddOrganizationMember :one
+INSERT INTO organization_members (organization_id, user_id, role)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: RemoveOrganizationMember :exec
+DELETE FROM organization_members
+WHERE organization_id = $1 AND user_id = $2;
+
+-- name: GetOrganizationMember :one
+SELECT * FROM organization_members
+WHERE organization_id = $1 AND user_id = $2 LIMIT 1;
+
+-- name: ListOrganizationMembers :many
+SELECT om.*, u.email, u.full_name
+FROM organization_members om
+JOIN users u ON om.user_id = u.id
+WHERE om.organization_id = $1
+ORDER BY om.created_at;
+
+-- name: SetPasswordResetToken :exec
+UPDATE users
+SET password_reset_token = $2, password_reset_expires_at = $3
+WHERE email = $1;
+
+-- name: GetUserByResetToken :one
+SELECT * FROM users
+WHERE password_reset_token = $1 AND password_reset_expires_at > NOW()
+LIMIT 1;
+
+-- name: UpdatePassword :exec
+UPDATE users
+SET password_hash = $2, password_reset_token = NULL, password_reset_expires_at = NULL
+WHERE id = $1;
+
+-- name: CreateInvitation :one
+INSERT INTO organization_invitations (organization_id, email, role, token, expires_at, invited_by)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING *;
+
+-- name: GetInvitationByToken :one
+SELECT * FROM organization_invitations
+WHERE token = $1 AND expires_at > NOW()
+LIMIT 1;
+
+-- name: DeleteInvitation :exec
+DELETE FROM organization_invitations
+WHERE id = $1;
+
+-- name: ListInvitations :many
+SELECT * FROM organization_invitations
+WHERE organization_id = $1;
+
+-- name: AddProjectMember :one
+INSERT INTO project_members (project_id, user_id, role)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: RemoveProjectMember :exec
+DELETE FROM project_members
+WHERE project_id = $1 AND user_id = $2;
+
+-- name: GetProjectMember :one
+SELECT * FROM project_members
+WHERE project_id = $1 AND user_id = $2;
+
+-- name: ListProjectMembers :many
+SELECT pm.*, u.email, u.full_name
+FROM project_members pm
+JOIN users u ON pm.user_id = u.id
+WHERE pm.project_id = $1;
