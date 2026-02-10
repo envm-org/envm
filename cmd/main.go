@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-
 type Config struct {
 	DatabaseURI string
 	Addr        string
@@ -21,10 +20,8 @@ type DBConfig struct {
 	DSN string
 }
 
-
 func main() {
 	ctx := context.Background()
-
 
 	addr := env.GetString("ADDR", ":8080")
 	cfg := Config{
@@ -33,11 +30,10 @@ func main() {
 		TokenSecret: env.GetString("TOKEN_SECRET", "12345678901234567890123456789012"),
 	}
 	cfg.DB.DSN = cfg.DatabaseURI
-	
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	
-	
+
 	// database connection
 	conn, err := pgx.Connect(ctx, cfg.DB.DSN)
 	if err != nil {
@@ -45,12 +41,12 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close(ctx)
-	
+
 	logger.Info("database connection successful")
-	
-	api := application {
+
+	api := application{
 		config: cfg,
-		db: conn,
+		db:     conn,
 	}
 
 	h := api.mount()
@@ -60,5 +56,4 @@ func main() {
 		os.Exit(1)
 	}
 
-	
 }

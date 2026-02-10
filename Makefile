@@ -39,3 +39,6 @@ migrate-status:
 
 dev:
 	go run github.com/air-verse/air
+
+security:
+	govulncheck ./...

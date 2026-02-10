@@ -18,12 +18,14 @@ type Querier interface {
 	CreateInvitation(ctx context.Context, arg CreateInvitationParams) (OrganizationInvitation, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
+	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVariable(ctx context.Context, arg CreateVariableParams) (Variable, error)
 	DeleteEnvironment(ctx context.Context, id pgtype.UUID) error
 	DeleteInvitation(ctx context.Context, id pgtype.UUID) error
 	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
 	DeleteProject(ctx context.Context, id pgtype.UUID) error
+	DeleteRefreshToken(ctx context.Context, token string) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	DeleteVariable(ctx context.Context, arg DeleteVariableParams) error
 	GetEnvironment(ctx context.Context, id pgtype.UUID) (Environment, error)
@@ -32,9 +34,11 @@ type Querier interface {
 	GetOrganizationMember(ctx context.Context, arg GetOrganizationMemberParams) (OrganizationMember, error)
 	GetProject(ctx context.Context, id pgtype.UUID) (Project, error)
 	GetProjectMember(ctx context.Context, arg GetProjectMemberParams) (ProjectMember, error)
+	GetRefreshToken(ctx context.Context, token string) (RefreshToken, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByResetToken(ctx context.Context, passwordResetToken pgtype.Text) (User, error)
+	ListActiveRefreshTokensForUser(ctx context.Context, userID pgtype.UUID) ([]RefreshToken, error)
 	ListEnvironments(ctx context.Context, projectID pgtype.UUID) ([]Environment, error)
 	ListInvitations(ctx context.Context, organizationID pgtype.UUID) ([]OrganizationInvitation, error)
 	ListOrganizationMembers(ctx context.Context, organizationID pgtype.UUID) ([]ListOrganizationMembersRow, error)
@@ -46,6 +50,7 @@ type Querier interface {
 	ListVariables(ctx context.Context, environmentID pgtype.UUID) ([]Variable, error)
 	RemoveOrganizationMember(ctx context.Context, arg RemoveOrganizationMemberParams) error
 	RemoveProjectMember(ctx context.Context, arg RemoveProjectMemberParams) error
+	RevokeRefreshToken(ctx context.Context, token string) error
 	SetPasswordResetToken(ctx context.Context, arg SetPasswordResetTokenParams) error
 	UpdateEnvironment(ctx context.Context, arg UpdateEnvironmentParams) (Environment, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)

@@ -15,9 +15,9 @@ import (
 )
 
 type RegisterParams struct {
-	Email    string
-	Password string
-	FullName string
+	Email    string `validate:"required,email"`
+	Password string `validate:"required,min=8"`
+	FullName string `validate:"required"`
 }
 
 type Service interface {
@@ -25,6 +25,9 @@ type Service interface {
 	Register(ctx context.Context, params RegisterParams) (repo.User, error)
 	ForgotPassword(ctx context.Context, email string) error
 	ResetPassword(ctx context.Context, token, newPassword string) error
+	CreateSession(ctx context.Context, userID pgtype.UUID) (string, error)
+	ValidateRefreshToken(ctx context.Context, token string) (repo.User, error)
+	Logout(ctx context.Context, token string) error
 }
 
 type svc struct {
@@ -119,4 +122,56 @@ func (s *svc) ResetPassword(ctx context.Context, token, newPassword string) erro
 		ID:           user.ID,
 		PasswordHash: hashedPassword,
 	})
+}
+
+// CreateSession creates a new refresh token for the user
+func (s *svc) CreateSession(ctx context.Context, userID pgtype.UUID) (string, error) {
+	tokenBytes := make([]byte, 32)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(tokenBytes)
+	expiresAt := time.Now().Add(7 * 24 * time.Hour) // 7 days
+
+	_, err := s.repo.CreateRefreshToken(ctx, repo.CreateRefreshTokenParams{
+		UserID:    userID,
+		Token:     token,
+		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to create refresh token: %w", err)
+	}
+
+	return token, nil
+}
+
+// ValidateRefreshToken validates the refresh token and returns the user
+func (s *svc) ValidateRefreshToken(ctx context.Context, token string) (repo.User, error) {
+	refreshToken, err := s.repo.GetRefreshToken(ctx, token)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return repo.User{}, fmt.Errorf("invalid refresh token")
+		}
+		return repo.User{}, err
+	}
+
+	if refreshToken.Revoked.Bool {
+		return repo.User{}, fmt.Errorf("refresh token revoked")
+	}
+
+	if refreshToken.ExpiresAt.Time.Before(time.Now()) {
+		return repo.User{}, fmt.Errorf("refresh token expired")
+	}
+
+	user, err := s.repo.GetUser(ctx, refreshToken.UserID)
+	if err != nil {
+		return repo.User{}, err
+	}
+
+	return user, nil
+}
+
+// Logout revokes the refresh token
+func (s *svc) Logout(ctx context.Context, token string) error {
+	return s.repo.RevokeRefreshToken(ctx, token)
 }
