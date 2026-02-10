@@ -8,3 +8,5 @@
 .idea
 go.work
 bin/
+tmp/
+logs/

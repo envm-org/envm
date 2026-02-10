@@ -10,12 +10,12 @@ import (
 )
 
 type handler struct {
-	service    Service
+	service Service
 }
 
 func NewHandler(service Service) *handler {
 	return &handler{
-		service:    service,
+		service: service,
 	}
 }
 

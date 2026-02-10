@@ -207,7 +207,6 @@ func (h *handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	HTTPwriter.JSON(w, http.StatusOK, project)
 }
 
-
 func (h *handler) GetProject(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
@@ -219,7 +218,7 @@ func (h *handler) GetProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid id format", http.StatusBadRequest)
 		return
 	}
-	
+
 	project, err := h.service.GetProject(r.Context(), projectID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -260,7 +259,6 @@ func (h *handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	}
 	tempProject.ID = projectID
 
-	
 	existingProject, err := h.service.GetProject(r.Context(), projectID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -287,7 +285,6 @@ func (h *handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	}
 	HTTPwriter.JSON(w, http.StatusOK, project)
 }
-
 
 func (h *handler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")

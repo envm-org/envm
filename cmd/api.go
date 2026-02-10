@@ -59,7 +59,7 @@ func (app *application) mount() http.Handler {
 
 	authorizer := auth.NewAuthorizer(q)
 
-	envService := env.NewService(q)
+	envService := env.NewService(q, app.config.EncryptionKey)
 	envHandler := env.NewHandler(envService, authorizer)
 
 	projectService := project.NewService(q)
@@ -106,6 +106,11 @@ func (app *application) mount() http.Handler {
 			r.Put("/", envHandler.UpdateEnv)
 			r.Delete("/", envHandler.DeleteEnv)
 			r.Get("/list", envHandler.ListEnvs)
+
+			r.Post("/variable", envHandler.CreateVariable)
+			r.Put("/variable", envHandler.UpdateVariable)
+			r.Delete("/variable", envHandler.DeleteVariable)
+			r.Get("/variable/list", envHandler.ListVariables)
 		})
 
 		r.Route("/project", func(r chi.Router) {

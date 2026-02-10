@@ -15,10 +15,11 @@ import (
 )
 
 type Config struct {
-	DatabaseURI string
-	Addr        string
-	TokenSecret string
-	DB          DBConfig
+	DatabaseURI   string
+	Addr          string
+	TokenSecret   string
+	EncryptionKey string
+	DB            DBConfig
 }
 
 type DBConfig struct {
@@ -30,9 +31,10 @@ func main() {
 
 	addr := env.GetString("ADDR", ":8080")
 	cfg := Config{
-		DatabaseURI: env.GetString("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/envm"),
-		Addr:        addr,
-		TokenSecret: env.GetString("TOKEN_SECRET", "12345678901234567890123456789012"),
+		DatabaseURI:   env.GetString("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/envm"),
+		Addr:          addr,
+		TokenSecret:   env.GetString("TOKEN_SECRET", "12345678901234567890123456789012"),
+		EncryptionKey: env.GetString("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"),
 	}
 	cfg.DB.DSN = cfg.DatabaseURI
 

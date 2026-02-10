@@ -39,13 +39,13 @@ func (h *handler) CreateOrg(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	org, err := h.service.CreateOrg(r.Context(), tempOrg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// TODO: Add the creator as Owner member
 	HTTPwriter.JSON(w, http.StatusOK, org)
 }
@@ -67,7 +67,7 @@ func (h *handler) GetOrg(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	var userID pgtype.UUID
 	if err := userID.Scan(claims.UserID); err != nil {
 		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
@@ -104,7 +104,7 @@ func (h *handler) UpdateOrg(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	var userID pgtype.UUID
 	userID.Scan(claims.UserID)
 
@@ -145,7 +145,7 @@ func (h *handler) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	var userID pgtype.UUID
 	userID.Scan(claims.UserID)
 

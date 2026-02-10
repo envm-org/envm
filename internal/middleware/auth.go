@@ -20,7 +20,7 @@ func AuthMiddleware(tokenMaker auth.TokenMaker) func(http.Handler) http.Handler 
 			tokenString := ""
 
 			authHeader := r.Header.Get("Authorization")
-			
+
 			if authHeader != "" {
 				parts := strings.Split(authHeader, " ")
 				if len(parts) == 2 && parts[0] == "Bearer" {

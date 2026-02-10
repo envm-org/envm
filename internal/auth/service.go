@@ -90,8 +90,8 @@ func (s *svc) ForgotPassword(ctx context.Context, email string) error {
 	expiresAt := time.Now().Add(1 * time.Hour) // 1 hour expiry
 
 	err = s.repo.SetPasswordResetToken(ctx, repo.SetPasswordResetTokenParams{
-		Email:               user.Email,
-		PasswordResetToken:  pgtype.Text{String: token, Valid: true},
+		Email:                  user.Email,
+		PasswordResetToken:     pgtype.Text{String: token, Valid: true},
 		PasswordResetExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
 	})
 	if err != nil {

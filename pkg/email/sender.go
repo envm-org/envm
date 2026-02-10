@@ -58,4 +58,3 @@ func (s *SMTPSender) SendEmail(to, subject, body string) error {
 	}
 	return nil
 }
-

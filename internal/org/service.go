@@ -20,7 +20,7 @@ type Service interface {
 	ListOrgs(ctx context.Context) ([]repo.Organization, error)
 	UpdateOrg(ctx context.Context, params repo.UpdateOrganizationParams) (repo.Organization, error)
 	DeleteOrg(ctx context.Context, id pgtype.UUID) error
-	
+
 	InviteMember(ctx context.Context, orgID pgtype.UUID, email, role string, invitedBy pgtype.UUID) error
 	AcceptInvitation(ctx context.Context, token string, userID pgtype.UUID) error
 }
@@ -80,7 +80,7 @@ func (s *svc) InviteMember(ctx context.Context, orgID pgtype.UUID, emailAddr, ro
 	// Send Email
 	subject := "You are invited to join an organization"
 	body := fmt.Sprintf("You have been invited to join. Use this token to accept: %s", token)
-	
+
 	return s.mailer.SendEmail(emailAddr, subject, body)
 }
 

@@ -13,7 +13,7 @@ type Service interface {
 	GetProject(ctx context.Context, id pgtype.UUID) (repo.Project, error)
 	UpdateProject(ctx context.Context, tempProject repo.UpdateProjectParams) (repo.Project, error)
 	DeleteProject(ctx context.Context, id pgtype.UUID) error
-	
+
 	ListProjectsForMember(ctx context.Context, organizationID, userID pgtype.UUID) ([]repo.Project, error)
 	AddMember(ctx context.Context, projectID, userID pgtype.UUID, role string) error
 	RemoveMember(ctx context.Context, projectID, userID pgtype.UUID) error
@@ -22,33 +22,28 @@ type Service interface {
 }
 
 type svc struct {
-	repo  *repo.Queries
+	repo *repo.Queries
 }
 
 func NewService(repo *repo.Queries) Service {
 	return &svc{repo: repo}
 }
 
-
 func (s *svc) ListProjects(ctx context.Context, organizationID pgtype.UUID) ([]repo.Project, error) {
 	return s.repo.ListProjects(ctx, organizationID)
 }
-
 
 func (s *svc) CreateProject(ctx context.Context, tempProject repo.CreateProjectParams) (repo.Project, error) {
 	return s.repo.CreateProject(ctx, tempProject)
 }
 
-
 func (s *svc) GetProject(ctx context.Context, id pgtype.UUID) (repo.Project, error) {
 	return s.repo.GetProject(ctx, id)
 }
 
-
 func (s *svc) UpdateProject(ctx context.Context, tempProject repo.UpdateProjectParams) (repo.Project, error) {
 	return s.repo.UpdateProject(ctx, tempProject)
 }
-
 
 func (s *svc) DeleteProject(ctx context.Context, id pgtype.UUID) error {
 	return s.repo.DeleteProject(ctx, id)
@@ -62,7 +57,7 @@ func (s *svc) ListProjectsForMember(ctx context.Context, organizationID, userID 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := make([]repo.Project, len(projects))
 	for i, p := range projects {
 		result[i] = repo.Project{
