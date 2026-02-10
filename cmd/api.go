@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -35,20 +34,17 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	// Rate Limiting: 100 requests per minute per IP
 	r.Use(httprate.LimitByIP(100, 1*time.Minute))
 
-	// CORS
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"}, // Adjust as needed
+		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           300,
 	}))
 
-	// Security Headers
 	r.Use(appMiddleware.SecurityHeaders)
 
 	r.Use(middleware.Timeout(60 * time.Second))
@@ -61,18 +57,14 @@ func (app *application) mount() http.Handler {
 
 	emailSender := email.NewLogSender()
 
-	// Authorizer
 	authorizer := auth.NewAuthorizer(q)
 
-	// Env
 	envService := env.NewService(q)
 	envHandler := env.NewHandler(envService, authorizer)
 
-	// Project
 	projectService := project.NewService(q)
 	projectHandler := project.NewHandler(projectService, authorizer)
 
-	// Org
 	orgService := org.NewService(q, emailSender)
 	orgHandler := org.NewHandler(orgService, authorizer)
 
@@ -86,11 +78,9 @@ func (app *application) mount() http.Handler {
 	authService := auth.NewService(q, emailSender)
 	authHandler := auth.NewHandler(authService, tokenMaker)
 
-	// Users
 	usersService := users.NewService(q)
 	usersHandler := users.NewHandler(usersService)
 
-	// Public Routes
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/login", authHandler.Login)
 		r.Post("/register", authHandler.Register)
@@ -141,19 +131,4 @@ func (app *application) mount() http.Handler {
 	})
 
 	return r
-}
-
-func (app *application) run(h http.Handler) error {
-	server := &http.Server{
-		Addr:         app.config.Addr,
-		Handler:      h,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  10 * time.Second,
-	}
-
-	log.Println("Starting server on port ", app.config.Addr)
-	//TODO: implement graceful shutdown
-
-	return server.ListenAndServe()
 }
