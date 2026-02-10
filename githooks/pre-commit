@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Stash unstaged changes to ensure we only test what's being committed
+# strict=true ensures we don't commit if there are errors
+STASH_NAME="pre-commit-$(date +%s)"
+git stash save -q --keep-index "$STASH_NAME"
+
+# Function to restore stash on exit (even if script fails)
+restore_stash() {
+    STASH_LIST=$(git stash list)
+    if echo "$STASH_LIST" | grep -q "$STASH_NAME"; then
+        git stash pop -q
+    fi
+}
+trap restore_stash EXIT
+
+# 1. Format Check (gofmt)
+echo "Running gofmt..."
+GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+
+if [ -n "$GO_FILES" ]; then
+    UNFORMATTED=$(gofmt -l $GO_FILES)
+    if [ -n "$UNFORMATTED" ]; then
+        echo "Error: The following files are not formatted:"
+        echo "$UNFORMATTED"
+        echo "Please run 'gofmt -w $UNFORMATTED' (or 'make format') and stage the changes."
+        exit 1
+    fi
+fi
+
+# 2. Lint Check (golangci-lint or go vet)
+if command -v golangci-lint >/dev/null 2>&1; then
+    echo "Running golangci-lint..."
+    golangci-lint run ./...
+    if [ $? -ne 0 ]; then
+        echo "Error: golangci-lint failed."
+        exit 1
+    fi
+else
+    echo "golangci-lint not found, falling back to 'go vet'..."
+    go vet ./...
+    if [ $? -ne 0 ]; then
+        echo "Error: go vet failed."
+        exit 1
+    fi
+fi
+
+echo "Pre-commit checks passed!"
+exit 0

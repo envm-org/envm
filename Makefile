@@ -1,4 +1,4 @@
-.PHONY: build run test clean migration migrate-up migrate-down migrate-status
+.PHONY: build run test clean migration migrate-up migrate-down migrate-status lint format install-hooks
 
 # Load environment variables from .env
 ifneq (,$(wildcard .env))
@@ -42,3 +42,12 @@ dev:
 
 security:
 	govulncheck ./...
+
+lint:
+	golangci-lint run ./...
+
+format:
+	gofmt -w .
+
+install-hooks:
+	git config core.hooksPath githooks
