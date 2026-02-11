@@ -15,9 +15,9 @@ import (
 )
 
 type RegisterParams struct {
-	Email    string `validate:"required,email"`
-	Password string `validate:"required,min=8"`
-	FullName string `validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+	FullName string `json:"full_name" validate:"required"`
 }
 
 type Service interface {
@@ -124,7 +124,6 @@ func (s *svc) ResetPassword(ctx context.Context, token, newPassword string) erro
 	})
 }
 
-// CreateSession creates a new refresh token for the user
 func (s *svc) CreateSession(ctx context.Context, userID pgtype.UUID) (string, error) {
 	tokenBytes := make([]byte, 32)
 	if _, err := rand.Read(tokenBytes); err != nil {
@@ -145,7 +144,6 @@ func (s *svc) CreateSession(ctx context.Context, userID pgtype.UUID) (string, er
 	return token, nil
 }
 
-// ValidateRefreshToken validates the refresh token and returns the user
 func (s *svc) ValidateRefreshToken(ctx context.Context, token string) (repo.User, error) {
 	refreshToken, err := s.repo.GetRefreshToken(ctx, token)
 	if err != nil {
@@ -171,7 +169,6 @@ func (s *svc) ValidateRefreshToken(ctx context.Context, token string) (repo.User
 	return user, nil
 }
 
-// Logout revokes the refresh token
 func (s *svc) Logout(ctx context.Context, token string) error {
 	return s.repo.RevokeRefreshToken(ctx, token)
 }

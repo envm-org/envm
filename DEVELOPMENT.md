@@ -49,12 +49,17 @@ The CLI source code is located in the `cli/` directory.
 ```bash
 make build-cli
 ```
-The binary will be placed in `bin/envm-cli`.
+The binary will be placed in `bin/envm`.
 
 **Run from source:**
 ```bash
 cd cli
 go run . [command]
+```
+
+**Install Script:**
+```bash
+./scripts/install-cli.sh
 ```
 
 ### 4. Running Documentation

@@ -6,7 +6,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-BINARY_NAME=envm
+BINARY_NAME=envm-server
 MIGRATION_DIR=./internal/adapters/postgresql/schema/migrations
 DB_DRIVER=postgres
 DB_STRING=$(DATABASE_URI)
@@ -53,7 +53,7 @@ install-hooks:
 	git config core.hooksPath githooks
 
 build-cli:
-	cd cli && go build -o ../bin/envm-cli .
+	cd cli && go build -o ../bin/envm .
 
 build-docs:
 	cd docs && npm install && npm run build

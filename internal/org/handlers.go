@@ -40,7 +40,18 @@ func (h *handler) CreateOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	org, err := h.service.CreateOrg(r.Context(), tempOrg)
+	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	org, err := h.service.CreateOrg(r.Context(), tempOrg, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

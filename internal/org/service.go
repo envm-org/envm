@@ -15,7 +15,7 @@ import (
 )
 
 type Service interface {
-	CreateOrg(ctx context.Context, params repo.CreateOrganizationParams) (repo.Organization, error)
+	CreateOrg(ctx context.Context, params repo.CreateOrganizationParams, userID pgtype.UUID) (repo.Organization, error)
 	GetOrg(ctx context.Context, id pgtype.UUID) (repo.Organization, error)
 	ListOrgs(ctx context.Context) ([]repo.Organization, error)
 	UpdateOrg(ctx context.Context, params repo.UpdateOrganizationParams) (repo.Organization, error)
@@ -37,8 +37,22 @@ func NewService(repo *repo.Queries, mailer email.Sender) Service {
 	}
 }
 
-func (s *svc) CreateOrg(ctx context.Context, params repo.CreateOrganizationParams) (repo.Organization, error) {
-	return s.repo.CreateOrganization(ctx, params)
+func (s *svc) CreateOrg(ctx context.Context, params repo.CreateOrganizationParams, userID pgtype.UUID) (repo.Organization, error) {
+	org, err := s.repo.CreateOrganization(ctx, params)
+	if err != nil {
+		return repo.Organization{}, err
+	}
+
+	_, err = s.repo.AddOrganizationMember(ctx, repo.AddOrganizationMemberParams{
+		OrganizationID: org.ID,
+		UserID:         userID,
+		Role:           "owner",
+	})
+	if err != nil {
+		return repo.Organization{}, fmt.Errorf("failed to add creator as member: %w", err)
+	}
+
+	return org, nil
 }
 
 func (s *svc) GetOrg(ctx context.Context, id pgtype.UUID) (repo.Organization, error) {

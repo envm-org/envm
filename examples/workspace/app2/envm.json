@@ -1,0 +1,16 @@
+{
+    "ownerId": "507f1f77bcf86cd799439011",
+    "projectId": "507f1f77bcf86cd799439011",
+    "envs": [
+        {
+            "name": "default",
+            "path": ".env"
+        }
+    ],
+    "credentials": [
+        {
+            "name": "google-service-account",
+            "path": "./credentials/google-service-account.json"
+        }
+    ]
+}
