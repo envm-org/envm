@@ -98,12 +98,10 @@ func parseError(resp *http.Response) error {
 	var errResp struct {
 		Error string `json:"error"`
 	}
-	// Try to parse JSON error first
 	if err := json.Unmarshal(bodyBytes, &errResp); err == nil && errResp.Error != "" {
 		return fmt.Errorf("api error: %s", errResp.Error)
 	}
 
-	// Fallback to body content (it might be a plain text error from http.Error)
 	if len(bodyBytes) > 0 {
 		return fmt.Errorf("api error: %s", string(bodyBytes))
 	}
@@ -145,4 +143,53 @@ func (c *Client) CreateProject(name, slug, description, token string) (*types.Pr
 	}
 
 	return &project, nil
+}
+
+func (c *Client) ListProjects(token string) ([]types.Project, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/projects", c.BaseURL), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("connection failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseError(resp)
+	}
+
+	var projects []types.Project
+	if err := json.NewDecoder(resp.Body).Decode(&projects); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return projects, nil
+}
+
+func (c *Client) Validate(token string) error {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/projects", c.BaseURL), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return fmt.Errorf("connection failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return fmt.Errorf("unauthorized")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("api error: %s", resp.Status)
+	}
+
+	return nil
 }

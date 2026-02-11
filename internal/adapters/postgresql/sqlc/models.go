@@ -70,6 +70,7 @@ type Variable struct {
 	Key           string             `json:"key"`
 	Value         string             `json:"value"`
 	IsSecret      pgtype.Bool        `json:"is_secret"`
+	Path          string             `json:"path"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }

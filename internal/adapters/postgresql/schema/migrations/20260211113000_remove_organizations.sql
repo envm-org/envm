@@ -1,10 +1,11 @@
 -- +goose Up
-ALTER TABLE projects DROP CONSTRAINT projects_organization_id_fkey;
-DROP TABLE organization_members;
-DROP TABLE organization_invitations;
-DROP TABLE organizations;
-ALTER TABLE projects DROP COLUMN organization_id;
-ALTER TABLE audit_logs DROP COLUMN organization_id;
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_organization_id_fkey;
+ALTER TABLE projects DROP COLUMN IF EXISTS organization_id;
+ALTER TABLE audit_logs DROP COLUMN IF EXISTS organization_id;
+
+DROP TABLE IF EXISTS organization_members;
+DROP TABLE IF EXISTS organization_invitations;
+DROP TABLE IF EXISTS organizations;
 
 -- +goose Down
 CREATE TABLE organizations (

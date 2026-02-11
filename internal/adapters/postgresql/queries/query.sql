@@ -75,13 +75,13 @@ DELETE FROM environments
 WHERE id = $1;
 
 -- name: CreateVariable :one
-INSERT INTO variables (environment_id, key, value, is_secret)
-VALUES ($1, $2, $3, $4)
+INSERT INTO variables (environment_id, key, value, is_secret, path)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateVariable :one
 UPDATE variables
-SET value = $3, is_secret = $4, updated_at = CURRENT_TIMESTAMP
+SET value = $3, is_secret = $4, path = $5, updated_at = CURRENT_TIMESTAMP
 WHERE environment_id = $1 AND key = $2
 RETURNING *;
 

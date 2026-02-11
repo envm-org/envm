@@ -48,7 +48,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := h.tokenMaker.CreateToken(user.ID, user.Email, 15*time.Minute)
+	accessToken, err := h.tokenMaker.CreateToken(user.ID, user.Email, 30*24*time.Hour)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
@@ -100,7 +100,7 @@ func (h *handler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := h.tokenMaker.CreateToken(user.ID, user.Email, 15*time.Minute)
+	accessToken, err := h.tokenMaker.CreateToken(user.ID, user.Email, 30*24*time.Hour)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
@@ -129,7 +129,6 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Logout(r.Context(), cookie.Value); err != nil {
-		// Log error but don't block logout
 		fmt.Printf("Logout Error: %v\n", err)
 	}
 

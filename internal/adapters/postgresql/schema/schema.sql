@@ -43,6 +43,7 @@ CREATE TABLE variables (
     key VARCHAR(255) NOT NULL,
     value TEXT NOT NULL,
     is_secret BOOLEAN DEFAULT FALSE,
+    path VARCHAR(500) NOT NULL DEFAULT '.env',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(environment_id, key)
@@ -71,10 +72,7 @@ CREATE TABLE refresh_tokens (
 
 
 CREATE INDEX idx_users_created_at ON users(created_at);
-CREATE INDEX idx_organizations_name ON organizations(name);
-CREATE INDEX idx_organization_members_user_id ON organization_members(user_id);
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX idx_audit_logs_organization_id ON audit_logs(organization_id);
 CREATE INDEX idx_audit_logs_resource_id ON audit_logs(resource_id);
 CREATE INDEX idx_project_members_user_id ON project_members(user_id);
 CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);

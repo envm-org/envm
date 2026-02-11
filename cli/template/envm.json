@@ -1,20 +1,5 @@
 {
-    "ownerId" : "507f1f77bcf86cd799439011",
     "projectId" : "507f1f77bcf86cd799439011",
-    "envs" : [
-        {
-            "name" : "development",
-            "path" : ".env.development"
-        },
-        {
-            "name" : "production",
-            "path" : ".env.production"
-        },
-        {
-            "name" : "staging",
-            "path" : ".env"
-        }
-    ],
     "":"this part will be implemented on later versions",
     "credentials" : [
         {

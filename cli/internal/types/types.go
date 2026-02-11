@@ -25,7 +25,6 @@ type User struct {
 
 type ProjectConfig struct {
 	ProjectID   string            `json:"projectId"`
-	Envs        []EnvEntry        `json:"envs"`
 	Credentials []CredentialEntry `json:"credentials"`
 }
 

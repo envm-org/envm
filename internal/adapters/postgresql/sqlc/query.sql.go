@@ -151,9 +151,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const createVariable = `-- name: CreateVariable :one
-INSERT INTO variables (environment_id, key, value, is_secret)
-VALUES ($1, $2, $3, $4)
-RETURNING id, environment_id, key, value, is_secret, created_at, updated_at
+INSERT INTO variables (environment_id, key, value, is_secret, path)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, environment_id, key, value, is_secret, path, created_at, updated_at
 `
 
 type CreateVariableParams struct {
@@ -161,6 +161,7 @@ type CreateVariableParams struct {
 	Key           string      `json:"key"`
 	Value         string      `json:"value"`
 	IsSecret      pgtype.Bool `json:"is_secret"`
+	Path          string      `json:"path"`
 }
 
 func (q *Queries) CreateVariable(ctx context.Context, arg CreateVariableParams) (Variable, error) {
@@ -169,6 +170,7 @@ func (q *Queries) CreateVariable(ctx context.Context, arg CreateVariableParams) 
 		arg.Key,
 		arg.Value,
 		arg.IsSecret,
+		arg.Path,
 	)
 	var i Variable
 	err := row.Scan(
@@ -177,6 +179,7 @@ func (q *Queries) CreateVariable(ctx context.Context, arg CreateVariableParams) 
 		&i.Key,
 		&i.Value,
 		&i.IsSecret,
+		&i.Path,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -508,7 +511,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 }
 
 const listVariables = `-- name: ListVariables :many
-SELECT id, environment_id, key, value, is_secret, created_at, updated_at FROM variables
+SELECT id, environment_id, key, value, is_secret, path, created_at, updated_at FROM variables
 WHERE environment_id = $1
 ORDER BY key
 `
@@ -528,6 +531,7 @@ func (q *Queries) ListVariables(ctx context.Context, environmentID pgtype.UUID) 
 			&i.Key,
 			&i.Value,
 			&i.IsSecret,
+			&i.Path,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -686,9 +690,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 
 const updateVariable = `-- name: UpdateVariable :one
 UPDATE variables
-SET value = $3, is_secret = $4, updated_at = CURRENT_TIMESTAMP
+SET value = $3, is_secret = $4, path = $5, updated_at = CURRENT_TIMESTAMP
 WHERE environment_id = $1 AND key = $2
-RETURNING id, environment_id, key, value, is_secret, created_at, updated_at
+RETURNING id, environment_id, key, value, is_secret, path, created_at, updated_at
 `
 
 type UpdateVariableParams struct {
@@ -696,6 +700,7 @@ type UpdateVariableParams struct {
 	Key           string      `json:"key"`
 	Value         string      `json:"value"`
 	IsSecret      pgtype.Bool `json:"is_secret"`
+	Path          string      `json:"path"`
 }
 
 func (q *Queries) UpdateVariable(ctx context.Context, arg UpdateVariableParams) (Variable, error) {
@@ -704,6 +709,7 @@ func (q *Queries) UpdateVariable(ctx context.Context, arg UpdateVariableParams) 
 		arg.Key,
 		arg.Value,
 		arg.IsSecret,
+		arg.Path,
 	)
 	var i Variable
 	err := row.Scan(
@@ -712,6 +718,7 @@ func (q *Queries) UpdateVariable(ctx context.Context, arg UpdateVariableParams) 
 		&i.Key,
 		&i.Value,
 		&i.IsSecret,
+		&i.Path,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

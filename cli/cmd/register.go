@@ -39,7 +39,7 @@ var registerCmd = &cobra.Command{
 		apiURL := viper.GetString("api-url")
 		client := auth.NewClient(apiURL)
 
-		// 1. Register logic
+		//  Register logic
 		user, err := client.Register(fullName, email, password)
 		if err != nil {
 			ui.PrintError(err)
@@ -47,7 +47,7 @@ var registerCmd = &cobra.Command{
 		}
 		ui.PrintSuccess("Registration successful!")
 
-		// 2. Auto-login logic
+		// Auto-login logic
 		ui.PrintSuccess("Logging you in...")
 		loginResp, err := client.Login(email, password)
 		if err != nil {
@@ -56,7 +56,7 @@ var registerCmd = &cobra.Command{
 			return
 		}
 
-		// 3. Save credentials
+		// Save credentials
 		creds := auth.Credentials{
 			Token:    loginResp.AccessToken,
 			UserID:   user.ID,

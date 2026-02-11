@@ -55,12 +55,11 @@ func (a *authorizer) HasProjectRole(ctx context.Context, userID, projectID pgtyp
 		return nil
 	}
 
-	// Hierarchy: Owner > Admin > Member
 	if userRole == RoleOwner {
-		return nil // Owner has all permissions
+		return nil
 	}
 	if userRole == RoleAdmin && slices.Contains(requiredRoles, RoleMember) {
-		return nil // Admin has Member permissions
+		return nil
 	}
 
 	return fmt.Errorf("insufficient permissions: required %v, have %s", requiredRoles, member.Role)
