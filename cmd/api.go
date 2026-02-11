@@ -9,7 +9,6 @@ import (
 	"github.com/envm-org/envm/internal/auth"
 	"github.com/envm-org/envm/internal/env"
 	appMiddleware "github.com/envm-org/envm/internal/middleware"
-	"github.com/envm-org/envm/internal/org"
 	"github.com/envm-org/envm/internal/project"
 	"github.com/envm-org/envm/internal/users"
 	authPkg "github.com/envm-org/envm/pkg/auth"
@@ -63,10 +62,7 @@ func (app *application) mount() http.Handler {
 	envHandler := env.NewHandler(envService, authorizer)
 
 	projectService := project.NewService(q)
-	projectHandler := project.NewHandler(projectService, authorizer)
-
-	orgService := org.NewService(q, emailSender)
-	orgHandler := org.NewHandler(orgService, authorizer)
+	projectHandler := project.NewHandler(projectService)
 
 	// Auth
 	tokenMaker, err := authPkg.NewJWTMaker(app.config.TokenSecret)
@@ -113,25 +109,16 @@ func (app *application) mount() http.Handler {
 			r.Get("/variable/list", envHandler.ListVariables)
 		})
 
-		r.Route("/project", func(r chi.Router) {
+		r.Route("/projects", func(r chi.Router) {
+			r.Get("/", projectHandler.ListProjects)
 			r.Post("/", projectHandler.CreateProject)
-			r.Get("/", projectHandler.GetProject)
-			r.Put("/", projectHandler.UpdateProject)
-			r.Delete("/", projectHandler.DeleteProject)
+			r.Get("/detail", projectHandler.GetProject)
+			r.Put("/detail", projectHandler.UpdateProject)
+			r.Delete("/detail", projectHandler.DeleteProject)
+
 			r.Post("/members", projectHandler.AddMember)
 			r.Delete("/members", projectHandler.RemoveMember)
 			r.Get("/members", projectHandler.ListMembers)
-		})
-
-		r.Route("/org", func(r chi.Router) {
-			r.Post("/", orgHandler.CreateOrg)
-			r.Get("/", orgHandler.GetOrg)
-			r.Put("/", orgHandler.UpdateOrg)
-			r.Delete("/", orgHandler.DeleteOrg)
-			r.Get("/list", orgHandler.ListOrgs)
-
-			r.Post("/invite", orgHandler.InviteMember)
-			r.Post("/join", orgHandler.AcceptInvitation)
 		})
 	})
 

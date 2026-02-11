@@ -19,7 +19,7 @@ const (
 )
 
 type Authorizer interface {
-	HasRole(ctx context.Context, userID, orgID pgtype.UUID, requiredRoles ...Role) error
+	HasProjectRole(ctx context.Context, userID, projectID pgtype.UUID, requiredRoles ...Role) error
 }
 
 type authorizer struct {
@@ -30,14 +30,14 @@ func NewAuthorizer(repo *repo.Queries) Authorizer {
 	return &authorizer{repo: repo}
 }
 
-func (a *authorizer) HasRole(ctx context.Context, userID, orgID pgtype.UUID, requiredRoles ...Role) error {
-	member, err := a.repo.GetOrganizationMember(ctx, repo.GetOrganizationMemberParams{
-		OrganizationID: orgID,
-		UserID:         userID,
+func (a *authorizer) HasProjectRole(ctx context.Context, userID, projectID pgtype.UUID, requiredRoles ...Role) error {
+	member, err := a.repo.GetProjectMember(ctx, repo.GetProjectMemberParams{
+		ProjectID: projectID,
+		UserID:    userID,
 	})
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return fmt.Errorf("user is not a member of this organization")
+			return fmt.Errorf("user is not a member of this project")
 		}
 		return fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -48,8 +48,19 @@ func (a *authorizer) HasRole(ctx context.Context, userID, orgID pgtype.UUID, req
 		}
 	}
 
-	if Role(member.Role) == RoleOwner && slices.Contains(requiredRoles, RoleAdmin) {
+	userRole := Role(member.Role)
+
+	// fast path exact match
+	if slices.Contains(requiredRoles, userRole) {
 		return nil
+	}
+
+	// Hierarchy: Owner > Admin > Member
+	if userRole == RoleOwner {
+		return nil // Owner has all permissions
+	}
+	if userRole == RoleAdmin && slices.Contains(requiredRoles, RoleMember) {
+		return nil // Admin has Member permissions
 	}
 
 	return fmt.Errorf("insufficient permissions: required %v, have %s", requiredRoles, member.Role)

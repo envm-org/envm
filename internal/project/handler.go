@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	repo "github.com/envm-org/envm/internal/adapters/postgresql/sqlc"
-	"github.com/envm-org/envm/internal/auth"
 	"github.com/envm-org/envm/internal/middleware"
 	HTTPwriter "github.com/envm-org/envm/pkg/HTTPwriter"
 	authPkg "github.com/envm-org/envm/pkg/auth"
@@ -13,26 +12,40 @@ import (
 )
 
 type handler struct {
-	service    Service
-	authorizer auth.Authorizer
+	service Service
 }
 
-func NewHandler(service Service, authorizer auth.Authorizer) *handler {
+func NewHandler(service Service) *handler {
 	return &handler{
-		service:    service,
-		authorizer: authorizer,
+		service: service,
 	}
 }
 
 func (h *handler) ListProjects(w http.ResponseWriter, r *http.Request) {
-	organizationIDStr := r.URL.Query().Get("organization_id")
-	if organizationIDStr == "" {
-		http.Error(w, "organization_id is required", http.StatusBadRequest)
+	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	var organizationID pgtype.UUID
-	if err := organizationID.Scan(organizationIDStr); err != nil {
-		http.Error(w, "invalid organization_id format", http.StatusBadRequest)
+
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	projects, err := h.service.ListProjects(r.Context(), userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	HTTPwriter.JSON(w, http.StatusOK, projects)
+}
+
+func (h *handler) CreateProject(w http.ResponseWriter, r *http.Request) {
+	var tempProject repo.CreateProjectParams
+	if err := json.NewDecoder(r.Body).Decode(&tempProject); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -41,28 +54,141 @@ func (h *handler) ListProjects(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
 
-	if err := h.authorizer.HasRole(r.Context(), userID, organizationID, auth.RoleOwner, auth.RoleAdmin, auth.RoleMember); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
 		return
 	}
 
-	var projects []repo.Project
-	var err error
-
-	if authErr := h.authorizer.HasRole(r.Context(), userID, organizationID, auth.RoleOwner, auth.RoleAdmin); authErr == nil {
-		projects, err = h.service.ListProjects(r.Context(), organizationID)
-	} else {
-		projects, err = h.service.ListProjectsForMember(r.Context(), organizationID, userID)
-	}
-
+	project, err := h.service.CreateProject(r.Context(), tempProject, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	HTTPwriter.JSON(w, http.StatusOK, projects)
+	HTTPwriter.JSON(w, http.StatusOK, project)
+}
+
+func (h *handler) GetProject(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+	var projectID pgtype.UUID
+	if err := projectID.Scan(id); err != nil {
+		http.Error(w, "invalid id format", http.StatusBadRequest)
+		return
+	}
+
+	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be a member
+	if _, err := h.service.GetMember(r.Context(), projectID, userID); err != nil {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	project, err := h.service.GetProject(r.Context(), projectID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	HTTPwriter.JSON(w, http.StatusOK, project)
+}
+
+func (h *handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+	var projectID pgtype.UUID
+	if err := projectID.Scan(id); err != nil {
+		http.Error(w, "invalid id format", http.StatusBadRequest)
+		return
+	}
+
+	var tempProject repo.UpdateProjectParams
+	if err := json.NewDecoder(r.Body).Decode(&tempProject); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	tempProject.ID = projectID
+
+	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be owner or admin
+	member, err := h.service.GetMember(r.Context(), projectID, userID)
+	if err != nil || (member.Role != "owner" && member.Role != "admin") {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	project, err := h.service.UpdateProject(r.Context(), tempProject)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	HTTPwriter.JSON(w, http.StatusOK, project)
+}
+
+func (h *handler) DeleteProject(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+	var projectID pgtype.UUID
+	if err := projectID.Scan(id); err != nil {
+		http.Error(w, "invalid id format", http.StatusBadRequest)
+		return
+	}
+
+	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be owner
+	member, err := h.service.GetMember(r.Context(), projectID, userID)
+	if err != nil || member.Role != "owner" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	if err := h.service.DeleteProject(r.Context(), projectID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	HTTPwriter.JSON(w, http.StatusOK, nil)
 }
 
 func (h *handler) AddMember(w http.ResponseWriter, r *http.Request) {
@@ -76,22 +202,22 @@ func (h *handler) AddMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.GetProject(r.Context(), req.ProjectID)
-	if err != nil {
-		http.Error(w, "project not found", http.StatusNotFound)
-		return
-	}
-
 	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
 
-	if err := h.authorizer.HasRole(r.Context(), userID, project.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be owner or admin
+	member, err := h.service.GetMember(r.Context(), req.ProjectID, userID)
+	if err != nil || (member.Role != "owner" && member.Role != "admin") {
+		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
 
@@ -116,22 +242,22 @@ func (h *handler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.GetProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, "project not found", http.StatusNotFound)
-		return
-	}
-
 	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
 
-	if err := h.authorizer.HasRole(r.Context(), userID, project.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be owner or admin
+	member, err := h.service.GetMember(r.Context(), projectID, userID)
+	if err != nil || (member.Role != "owner" && member.Role != "admin") {
+		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
 
@@ -150,25 +276,22 @@ func (h *handler) ListMembers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.GetProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, "project not found", http.StatusNotFound)
-		return
-	}
-
 	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
 
-	if err := h.authorizer.HasRole(r.Context(), userID, project.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		if _, err := h.service.GetMember(r.Context(), projectID, userID); err != nil {
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
+	var userID pgtype.UUID
+	if err := userID.Scan(claims.UserID); err != nil {
+		http.Error(w, "invalid user id in token", http.StatusUnauthorized)
+		return
+	}
+
+	// Permission check: Must be a member
+	if _, err := h.service.GetMember(r.Context(), projectID, userID); err != nil {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
 	}
 
 	members, err := h.service.ListMembers(r.Context(), projectID)
@@ -177,150 +300,4 @@ func (h *handler) ListMembers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	HTTPwriter.JSON(w, http.StatusOK, members)
-}
-
-func (h *handler) CreateProject(w http.ResponseWriter, r *http.Request) {
-	var tempProject repo.CreateProjectParams
-	if err := json.NewDecoder(r.Body).Decode(&tempProject); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
-	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
-
-	if err := h.authorizer.HasRole(r.Context(), userID, tempProject.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	project, err := h.service.CreateProject(r.Context(), tempProject)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	HTTPwriter.JSON(w, http.StatusOK, project)
-}
-
-func (h *handler) GetProject(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
-		return
-	}
-	var projectID pgtype.UUID
-	if err := projectID.Scan(id); err != nil {
-		http.Error(w, "invalid id format", http.StatusBadRequest)
-		return
-	}
-
-	project, err := h.service.GetProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
-	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
-
-	if err := h.authorizer.HasRole(r.Context(), userID, project.OrganizationID, auth.RoleOwner, auth.RoleAdmin, auth.RoleMember); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	HTTPwriter.JSON(w, http.StatusOK, project)
-}
-
-func (h *handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
-		return
-	}
-	var projectID pgtype.UUID
-	if err := projectID.Scan(id); err != nil {
-		http.Error(w, "invalid id format", http.StatusBadRequest)
-		return
-	}
-	var tempProject repo.UpdateProjectParams
-	if err := json.NewDecoder(r.Body).Decode(&tempProject); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	tempProject.ID = projectID
-
-	existingProject, err := h.service.GetProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
-	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
-
-	if err := h.authorizer.HasRole(r.Context(), userID, existingProject.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	project, err := h.service.UpdateProject(r.Context(), tempProject)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	HTTPwriter.JSON(w, http.StatusOK, project)
-}
-
-func (h *handler) DeleteProject(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
-		return
-	}
-	var projectID pgtype.UUID
-	if err := projectID.Scan(id); err != nil {
-		http.Error(w, "invalid id format", http.StatusBadRequest)
-		return
-	}
-
-	existingProject, err := h.service.GetProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	claims, ok := r.Context().Value(middleware.UserKey).(*authPkg.Claims)
-	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-	var userID pgtype.UUID
-	userID.Scan(claims.UserID)
-
-	if err := h.authorizer.HasRole(r.Context(), userID, existingProject.OrganizationID, auth.RoleOwner, auth.RoleAdmin); err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	err = h.service.DeleteProject(r.Context(), projectID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	HTTPwriter.JSON(w, http.StatusOK, nil)
 }

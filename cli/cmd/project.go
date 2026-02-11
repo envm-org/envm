@@ -20,14 +20,12 @@ var projectCmd = &cobra.Command{
 
 var projectListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List all projects in an organization",
+	Short: "List all projects",
 	Run: func(cmd *cobra.Command, args []string) {
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 
-		orgID, _ := cmd.Flags().GetString("org-id")
-
-		body, err := c.Get("/project/list?organization_id=" + orgID)
+		body, err := c.Get("/projects")
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -39,12 +37,14 @@ var projectListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var headers = []string{"Name", "Slug"}
+		var headers = []string{"Name", "Slug", "Role", "ID"}
 		var data [][]string
 		for _, p := range projects {
 			data = append(data, []string{
 				fmt.Sprintf("%v", p["name"]),
 				fmt.Sprintf("%v", p["slug"]),
+				fmt.Sprintf("%v", p["role"]),
+				fmt.Sprintf("%v", p["id"]),
 			})
 		}
 
@@ -58,29 +58,20 @@ var projectCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
-		r := resolver.New(c)
-
-		orgSlug, _ := cmd.Flags().GetString("org")
-		orgID, err := r.ResolveOrg(orgSlug)
-		if err != nil {
-			ui.PrintError(err)
-			os.Exit(1)
-		}
 
 		name, _ := cmd.Flags().GetString("name")
 		slug, _ := cmd.Flags().GetString("slug")
 		desc, _ := cmd.Flags().GetString("desc")
 
 		payload := map[string]interface{}{
-			"organization_id": orgID,
-			"name":            name,
-			"slug":            slug,
+			"name": name,
+			"slug": slug,
 		}
 		if desc != "" {
 			payload["description"] = desc
 		}
 
-		body, err := c.Post("/project", payload)
+		body, err := c.Post("/projects", payload)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -99,19 +90,18 @@ var projectGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		projectSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveProject(orgSlug, projectSlug)
+		id, err := r.ResolveProject(projectSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
 		}
 
-		body, err := c.Get("/project?id=" + id)
+		body, err := c.Get("/projects/detail?id=" + id)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -129,13 +119,12 @@ var projectUpdateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		projectSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveProject(orgSlug, projectSlug)
+		id, err := r.ResolveProject(projectSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -158,7 +147,7 @@ var projectUpdateCmd = &cobra.Command{
 			payload["description"] = desc
 		}
 
-		body, err := c.Put("/project?id="+id, payload)
+		body, err := c.Put("/projects/detail?id="+id, payload) // Using PUT /projects/detail consistent with api.go
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -177,19 +166,18 @@ var projectDeleteCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		projectSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveProject(orgSlug, projectSlug)
+		id, err := r.ResolveProject(projectSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
 		}
 
-		_, err = c.Delete("/project?id=" + id)
+		_, err = c.Delete("/projects/detail?id=" + id)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -207,26 +195,13 @@ func init() {
 	projectCmd.AddCommand(projectUpdateCmd)
 	projectCmd.AddCommand(projectDeleteCmd)
 
-	projectListCmd.Flags().String("org", "", "Organization slug")
-	projectListCmd.MarkFlagRequired("org")
-
-	projectCreateCmd.Flags().String("org", "", "Organization slug")
 	projectCreateCmd.Flags().String("name", "", "Project name")
 	projectCreateCmd.Flags().String("slug", "", "Project slug")
 	projectCreateCmd.Flags().String("desc", "", "Project description")
-	projectCreateCmd.MarkFlagRequired("org")
 	projectCreateCmd.MarkFlagRequired("name")
 	projectCreateCmd.MarkFlagRequired("slug")
 
-	projectGetCmd.Flags().String("org", "", "Organization slug")
-	projectGetCmd.MarkFlagRequired("org")
-
-	projectUpdateCmd.Flags().String("org", "", "Organization slug")
 	projectUpdateCmd.Flags().String("name", "", "Project name")
 	projectUpdateCmd.Flags().String("slug", "", "Project slug")
 	projectUpdateCmd.Flags().String("desc", "", "Project description")
-	projectUpdateCmd.MarkFlagRequired("org")
-
-	projectDeleteCmd.Flags().String("org", "", "Organization slug")
-	projectDeleteCmd.MarkFlagRequired("org")
 }

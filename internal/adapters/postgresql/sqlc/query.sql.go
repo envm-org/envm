@@ -11,30 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const addOrganizationMember = `-- name: AddOrganizationMember :one
-INSERT INTO organization_members (organization_id, user_id, role)
-VALUES ($1, $2, $3)
-RETURNING organization_id, user_id, role, created_at
-`
-
-type AddOrganizationMemberParams struct {
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	UserID         pgtype.UUID `json:"user_id"`
-	Role           string      `json:"role"`
-}
-
-func (q *Queries) AddOrganizationMember(ctx context.Context, arg AddOrganizationMemberParams) (OrganizationMember, error) {
-	row := q.db.QueryRow(ctx, addOrganizationMember, arg.OrganizationID, arg.UserID, arg.Role)
-	var i OrganizationMember
-	err := row.Scan(
-		&i.OrganizationID,
-		&i.UserID,
-		&i.Role,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const addProjectMember = `-- name: AddProjectMember :one
 INSERT INTO project_members (project_id, user_id, role)
 VALUES ($1, $2, $3)
@@ -60,24 +36,22 @@ func (q *Queries) AddProjectMember(ctx context.Context, arg AddProjectMemberPara
 }
 
 const createAuditLog = `-- name: CreateAuditLog :one
-INSERT INTO audit_logs (user_id, organization_id, action, resource_type, resource_id, details)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, organization_id, action, resource_type, resource_id, details, created_at
+INSERT INTO audit_logs (user_id, action, resource_type, resource_id, details)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, action, resource_type, resource_id, details, created_at
 `
 
 type CreateAuditLogParams struct {
-	UserID         pgtype.UUID `json:"user_id"`
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	Action         string      `json:"action"`
-	ResourceType   string      `json:"resource_type"`
-	ResourceID     pgtype.UUID `json:"resource_id"`
-	Details        []byte      `json:"details"`
+	UserID       pgtype.UUID `json:"user_id"`
+	Action       string      `json:"action"`
+	ResourceType string      `json:"resource_type"`
+	ResourceID   pgtype.Text `json:"resource_id"`
+	Details      []byte      `json:"details"`
 }
 
 func (q *Queries) CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error) {
 	row := q.db.QueryRow(ctx, createAuditLog,
 		arg.UserID,
-		arg.OrganizationID,
 		arg.Action,
 		arg.ResourceType,
 		arg.ResourceID,
@@ -87,7 +61,6 @@ func (q *Queries) CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) 
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.OrganizationID,
 		&i.Action,
 		&i.ResourceType,
 		&i.ResourceID,
@@ -123,92 +96,23 @@ func (q *Queries) CreateEnvironment(ctx context.Context, arg CreateEnvironmentPa
 	return i, err
 }
 
-const createInvitation = `-- name: CreateInvitation :one
-INSERT INTO organization_invitations (organization_id, email, role, token, expires_at, invited_by)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, organization_id, email, role, token, expires_at, invited_by, created_at
-`
-
-type CreateInvitationParams struct {
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	Email          string             `json:"email"`
-	Role           string             `json:"role"`
-	Token          string             `json:"token"`
-	ExpiresAt      pgtype.Timestamptz `json:"expires_at"`
-	InvitedBy      pgtype.UUID        `json:"invited_by"`
-}
-
-func (q *Queries) CreateInvitation(ctx context.Context, arg CreateInvitationParams) (OrganizationInvitation, error) {
-	row := q.db.QueryRow(ctx, createInvitation,
-		arg.OrganizationID,
-		arg.Email,
-		arg.Role,
-		arg.Token,
-		arg.ExpiresAt,
-		arg.InvitedBy,
-	)
-	var i OrganizationInvitation
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Email,
-		&i.Role,
-		&i.Token,
-		&i.ExpiresAt,
-		&i.InvitedBy,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const createOrganization = `-- name: CreateOrganization :one
-INSERT INTO organizations (name, slug)
-VALUES ($1, $2)
-RETURNING id, name, slug, created_at, updated_at
-`
-
-type CreateOrganizationParams struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
-
-func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error) {
-	row := q.db.QueryRow(ctx, createOrganization, arg.Name, arg.Slug)
-	var i Organization
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Slug,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const createProject = `-- name: CreateProject :one
-INSERT INTO projects (organization_id, name, slug, description)
-VALUES ($1, $2, $3, $4)
-RETURNING id, organization_id, name, slug, description, created_at, updated_at
+INSERT INTO projects (name, slug, description)
+VALUES ($1, $2, $3)
+RETURNING id, name, slug, description, created_at, updated_at
 `
 
 type CreateProjectParams struct {
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	Name           string      `json:"name"`
-	Slug           string      `json:"slug"`
-	Description    pgtype.Text `json:"description"`
+	Name        string      `json:"name"`
+	Slug        string      `json:"slug"`
+	Description pgtype.Text `json:"description"`
 }
 
 func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
-	row := q.db.QueryRow(ctx, createProject,
-		arg.OrganizationID,
-		arg.Name,
-		arg.Slug,
-		arg.Description,
-	)
+	row := q.db.QueryRow(ctx, createProject, arg.Name, arg.Slug, arg.Description)
 	var i Project
 	err := row.Scan(
 		&i.ID,
-		&i.OrganizationID,
 		&i.Name,
 		&i.Slug,
 		&i.Description,
@@ -289,26 +193,6 @@ func (q *Queries) DeleteEnvironment(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
-const deleteInvitation = `-- name: DeleteInvitation :exec
-DELETE FROM organization_invitations
-WHERE id = $1
-`
-
-func (q *Queries) DeleteInvitation(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteInvitation, id)
-	return err
-}
-
-const deleteOrganization = `-- name: DeleteOrganization :exec
-DELETE FROM organizations
-WHERE id = $1
-`
-
-func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteOrganization, id)
-	return err
-}
-
 const deleteProject = `-- name: DeleteProject :exec
 DELETE FROM projects
 WHERE id = $1
@@ -363,70 +247,8 @@ func (q *Queries) GetEnvironment(ctx context.Context, id pgtype.UUID) (Environme
 	return i, err
 }
 
-const getInvitationByToken = `-- name: GetInvitationByToken :one
-SELECT id, organization_id, email, role, token, expires_at, invited_by, created_at FROM organization_invitations
-WHERE token = $1 AND expires_at > NOW()
-LIMIT 1
-`
-
-func (q *Queries) GetInvitationByToken(ctx context.Context, token string) (OrganizationInvitation, error) {
-	row := q.db.QueryRow(ctx, getInvitationByToken, token)
-	var i OrganizationInvitation
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Email,
-		&i.Role,
-		&i.Token,
-		&i.ExpiresAt,
-		&i.InvitedBy,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const getOrganization = `-- name: GetOrganization :one
-SELECT id, name, slug, created_at, updated_at FROM organizations
-WHERE id = $1 LIMIT 1
-`
-
-func (q *Queries) GetOrganization(ctx context.Context, id pgtype.UUID) (Organization, error) {
-	row := q.db.QueryRow(ctx, getOrganization, id)
-	var i Organization
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Slug,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getOrganizationMember = `-- name: GetOrganizationMember :one
-SELECT organization_id, user_id, role, created_at FROM organization_members
-WHERE organization_id = $1 AND user_id = $2 LIMIT 1
-`
-
-type GetOrganizationMemberParams struct {
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	UserID         pgtype.UUID `json:"user_id"`
-}
-
-func (q *Queries) GetOrganizationMember(ctx context.Context, arg GetOrganizationMemberParams) (OrganizationMember, error) {
-	row := q.db.QueryRow(ctx, getOrganizationMember, arg.OrganizationID, arg.UserID)
-	var i OrganizationMember
-	err := row.Scan(
-		&i.OrganizationID,
-		&i.UserID,
-		&i.Role,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const getProject = `-- name: GetProject :one
-SELECT id, organization_id, name, slug, description, created_at, updated_at FROM projects
+SELECT id, name, slug, description, created_at, updated_at FROM projects
 WHERE id = $1 LIMIT 1
 `
 
@@ -435,7 +257,6 @@ func (q *Queries) GetProject(ctx context.Context, id pgtype.UUID) (Project, erro
 	var i Project
 	err := row.Scan(
 		&i.ID,
-		&i.OrganizationID,
 		&i.Name,
 		&i.Slug,
 		&i.Description,
@@ -564,115 +385,6 @@ func (q *Queries) ListEnvironments(ctx context.Context, projectID pgtype.UUID) (
 	return items, nil
 }
 
-const listInvitations = `-- name: ListInvitations :many
-SELECT id, organization_id, email, role, token, expires_at, invited_by, created_at FROM organization_invitations
-WHERE organization_id = $1
-`
-
-func (q *Queries) ListInvitations(ctx context.Context, organizationID pgtype.UUID) ([]OrganizationInvitation, error) {
-	rows, err := q.db.Query(ctx, listInvitations, organizationID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []OrganizationInvitation
-	for rows.Next() {
-		var i OrganizationInvitation
-		if err := rows.Scan(
-			&i.ID,
-			&i.OrganizationID,
-			&i.Email,
-			&i.Role,
-			&i.Token,
-			&i.ExpiresAt,
-			&i.InvitedBy,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listOrganizationMembers = `-- name: ListOrganizationMembers :many
-SELECT om.organization_id, om.user_id, om.role, om.created_at, u.email, u.full_name
-FROM organization_members om
-JOIN users u ON om.user_id = u.id
-WHERE om.organization_id = $1
-ORDER BY om.created_at
-`
-
-type ListOrganizationMembersRow struct {
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	UserID         pgtype.UUID        `json:"user_id"`
-	Role           string             `json:"role"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	Email          string             `json:"email"`
-	FullName       string             `json:"full_name"`
-}
-
-func (q *Queries) ListOrganizationMembers(ctx context.Context, organizationID pgtype.UUID) ([]ListOrganizationMembersRow, error) {
-	rows, err := q.db.Query(ctx, listOrganizationMembers, organizationID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListOrganizationMembersRow
-	for rows.Next() {
-		var i ListOrganizationMembersRow
-		if err := rows.Scan(
-			&i.OrganizationID,
-			&i.UserID,
-			&i.Role,
-			&i.CreatedAt,
-			&i.Email,
-			&i.FullName,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listOrganizations = `-- name: ListOrganizations :many
-SELECT id, name, slug, created_at, updated_at FROM organizations
-ORDER BY name
-`
-
-func (q *Queries) ListOrganizations(ctx context.Context) ([]Organization, error) {
-	rows, err := q.db.Query(ctx, listOrganizations)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Organization
-	for rows.Next() {
-		var i Organization
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Slug,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listProjectMembers = `-- name: ListProjectMembers :many
 SELECT pm.project_id, pm.user_id, pm.role, pm.created_at, u.email, u.full_name
 FROM project_members pm
@@ -717,68 +429,39 @@ func (q *Queries) ListProjectMembers(ctx context.Context, projectID pgtype.UUID)
 }
 
 const listProjects = `-- name: ListProjects :many
-SELECT id, organization_id, name, slug, description, created_at, updated_at FROM projects
-WHERE organization_id = $1
-ORDER BY created_at DESC
-`
-
-func (q *Queries) ListProjects(ctx context.Context, organizationID pgtype.UUID) ([]Project, error) {
-	rows, err := q.db.Query(ctx, listProjects, organizationID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Project
-	for rows.Next() {
-		var i Project
-		if err := rows.Scan(
-			&i.ID,
-			&i.OrganizationID,
-			&i.Name,
-			&i.Slug,
-			&i.Description,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listProjectsForMember = `-- name: ListProjectsForMember :many
-SELECT p.id, p.organization_id, p.name, p.slug, p.description, p.created_at, p.updated_at FROM projects p
+SELECT p.id, p.name, p.slug, p.description, p.created_at, p.updated_at, pm.role FROM projects p
 JOIN project_members pm ON p.id = pm.project_id
-WHERE p.organization_id = $1 AND pm.user_id = $2
+WHERE pm.user_id = $1
 ORDER BY p.created_at DESC
 `
 
-type ListProjectsForMemberParams struct {
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	UserID         pgtype.UUID `json:"user_id"`
+type ListProjectsRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description pgtype.Text        `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	Role        string             `json:"role"`
 }
 
-func (q *Queries) ListProjectsForMember(ctx context.Context, arg ListProjectsForMemberParams) ([]Project, error) {
-	rows, err := q.db.Query(ctx, listProjectsForMember, arg.OrganizationID, arg.UserID)
+func (q *Queries) ListProjects(ctx context.Context, userID pgtype.UUID) ([]ListProjectsRow, error) {
+	rows, err := q.db.Query(ctx, listProjects, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Project
+	var items []ListProjectsRow
 	for rows.Next() {
-		var i Project
+		var i ListProjectsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.OrganizationID,
 			&i.Name,
 			&i.Slug,
 			&i.Description,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}
@@ -858,21 +541,6 @@ func (q *Queries) ListVariables(ctx context.Context, environmentID pgtype.UUID) 
 	return items, nil
 }
 
-const removeOrganizationMember = `-- name: RemoveOrganizationMember :exec
-DELETE FROM organization_members
-WHERE organization_id = $1 AND user_id = $2
-`
-
-type RemoveOrganizationMemberParams struct {
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	UserID         pgtype.UUID `json:"user_id"`
-}
-
-func (q *Queries) RemoveOrganizationMember(ctx context.Context, arg RemoveOrganizationMemberParams) error {
-	_, err := q.db.Exec(ctx, removeOrganizationMember, arg.OrganizationID, arg.UserID)
-	return err
-}
-
 const removeProjectMember = `-- name: RemoveProjectMember :exec
 DELETE FROM project_members
 WHERE project_id = $1 AND user_id = $2
@@ -932,32 +600,6 @@ func (q *Queries) UpdateEnvironment(ctx context.Context, arg UpdateEnvironmentPa
 	return i, err
 }
 
-const updateOrganization = `-- name: UpdateOrganization :one
-UPDATE organizations
-SET name = $2, slug = $3, updated_at = CURRENT_TIMESTAMP
-WHERE id = $1
-RETURNING id, name, slug, created_at, updated_at
-`
-
-type UpdateOrganizationParams struct {
-	ID   pgtype.UUID `json:"id"`
-	Name string      `json:"name"`
-	Slug string      `json:"slug"`
-}
-
-func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error) {
-	row := q.db.QueryRow(ctx, updateOrganization, arg.ID, arg.Name, arg.Slug)
-	var i Organization
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Slug,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const updatePassword = `-- name: UpdatePassword :exec
 UPDATE users
 SET password_hash = $2, password_reset_token = NULL, password_reset_expires_at = NULL
@@ -978,7 +620,7 @@ const updateProject = `-- name: UpdateProject :one
 UPDATE projects
 SET name = $2, slug = $3, description = $4, updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, slug, description, created_at, updated_at
+RETURNING id, name, slug, description, created_at, updated_at
 `
 
 type UpdateProjectParams struct {
@@ -998,7 +640,6 @@ func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (P
 	var i Project
 	err := row.Scan(
 		&i.ID,
-		&i.OrganizationID,
 		&i.Name,
 		&i.Slug,
 		&i.Description,

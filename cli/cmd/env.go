@@ -22,10 +22,21 @@ var envListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all environments in a project",
 	Run: func(cmd *cobra.Command, args []string) {
+		projectSlug, _ := cmd.Flags().GetString("project")
+		if projectSlug == "" {
+			ui.PrintError(fmt.Errorf("project slug is required"))
+			os.Exit(1)
+		}
+
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
+		r := resolver.New(c)
 
-		projectID, _ := cmd.Flags().GetString("project-id")
+		projectID, err := r.ResolveProject(projectSlug)
+		if err != nil {
+			ui.PrintError(err)
+			os.Exit(1)
+		}
 
 		body, err := c.Get("/env/list?project_id=" + projectID)
 		if err != nil {
@@ -60,9 +71,8 @@ var envCreateCmd = &cobra.Command{
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		orgSlug, _ := cmd.Flags().GetString("org")
 		projectSlug, _ := cmd.Flags().GetString("project")
-		projectID, err := r.ResolveProject(orgSlug, projectSlug)
+		projectID, err := r.ResolveProject(projectSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -96,14 +106,13 @@ var envGetCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		envSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 		projectSlug, _ := cmd.Flags().GetString("project")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveEnv(orgSlug, projectSlug, envSlug)
+		id, err := r.ResolveEnv(projectSlug, envSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -127,14 +136,13 @@ var envUpdateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		envSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 		projectSlug, _ := cmd.Flags().GetString("project")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveEnv(orgSlug, projectSlug, envSlug)
+		id, err := r.ResolveEnv(projectSlug, envSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -172,14 +180,13 @@ var envDeleteCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		envSlug := args[0]
-		orgSlug, _ := cmd.Flags().GetString("org")
 		projectSlug, _ := cmd.Flags().GetString("project")
 
 		apiURL := viper.GetString("api-url")
 		c := client.New(apiURL)
 		r := resolver.New(c)
 
-		id, err := r.ResolveEnv(orgSlug, projectSlug, envSlug)
+		id, err := r.ResolveEnv(projectSlug, envSlug)
 		if err != nil {
 			ui.PrintError(err)
 			os.Exit(1)
@@ -203,34 +210,24 @@ func init() {
 	envCmd.AddCommand(envUpdateCmd)
 	envCmd.AddCommand(envDeleteCmd)
 
-	envListCmd.Flags().String("org", "", "Organization slug")
 	envListCmd.Flags().String("project", "", "Project slug")
-	envListCmd.MarkFlagRequired("org")
 	envListCmd.MarkFlagRequired("project")
 
-	envCreateCmd.Flags().String("org", "", "Organization slug")
 	envCreateCmd.Flags().String("project", "", "Project slug")
 	envCreateCmd.Flags().String("name", "", "Environment name")
 	envCreateCmd.Flags().String("slug", "", "Environment slug")
-	envCreateCmd.MarkFlagRequired("org")
 	envCreateCmd.MarkFlagRequired("project")
 	envCreateCmd.MarkFlagRequired("name")
 	envCreateCmd.MarkFlagRequired("slug")
 
-	envGetCmd.Flags().String("org", "", "Organization slug")
 	envGetCmd.Flags().String("project", "", "Project slug")
-	envGetCmd.MarkFlagRequired("org")
 	envGetCmd.MarkFlagRequired("project")
 
-	envUpdateCmd.Flags().String("org", "", "Organization slug")
 	envUpdateCmd.Flags().String("project", "", "Project slug")
 	envUpdateCmd.Flags().String("name", "", "Environment name")
 	envUpdateCmd.Flags().String("slug", "", "Environment slug")
-	envUpdateCmd.MarkFlagRequired("org")
 	envUpdateCmd.MarkFlagRequired("project")
 
-	envDeleteCmd.Flags().String("org", "", "Organization slug")
 	envDeleteCmd.Flags().String("project", "", "Project slug")
-	envDeleteCmd.MarkFlagRequired("org")
 	envDeleteCmd.MarkFlagRequired("project")
 }

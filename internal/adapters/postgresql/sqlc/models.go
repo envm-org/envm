@@ -9,14 +9,13 @@ import (
 )
 
 type AuditLog struct {
-	ID             pgtype.UUID        `json:"id"`
-	UserID         pgtype.UUID        `json:"user_id"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	Action         string             `json:"action"`
-	ResourceType   string             `json:"resource_type"`
-	ResourceID     pgtype.UUID        `json:"resource_id"`
-	Details        []byte             `json:"details"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	ID           pgtype.UUID        `json:"id"`
+	UserID       pgtype.UUID        `json:"user_id"`
+	Action       string             `json:"action"`
+	ResourceType string             `json:"resource_type"`
+	ResourceID   pgtype.Text        `json:"resource_id"`
+	Details      []byte             `json:"details"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
 
 type Environment struct {
@@ -28,40 +27,13 @@ type Environment struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
-type Organization struct {
-	ID        pgtype.UUID        `json:"id"`
-	Name      string             `json:"name"`
-	Slug      string             `json:"slug"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-}
-
-type OrganizationInvitation struct {
-	ID             pgtype.UUID        `json:"id"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	Email          string             `json:"email"`
-	Role           string             `json:"role"`
-	Token          string             `json:"token"`
-	ExpiresAt      pgtype.Timestamptz `json:"expires_at"`
-	InvitedBy      pgtype.UUID        `json:"invited_by"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-}
-
-type OrganizationMember struct {
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	UserID         pgtype.UUID        `json:"user_id"`
-	Role           string             `json:"role"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-}
-
 type Project struct {
-	ID             pgtype.UUID        `json:"id"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	Name           string             `json:"name"`
-	Slug           string             `json:"slug"`
-	Description    pgtype.Text        `json:"description"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID          pgtype.UUID        `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description pgtype.Text        `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type ProjectMember struct {

@@ -111,47 +111,11 @@ func parseError(resp *http.Response) error {
 	return fmt.Errorf("api error: %s", resp.Status)
 }
 
-func (c *Client) CreateOrganization(name, slug, token string) (*types.Organization, error) {
+func (c *Client) CreateProject(name, slug, description, token string) (*types.Project, error) {
 	payload := map[string]string{
-		"name": name,
-		"slug": slug,
-	}
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/orgs", c.BaseURL), bytes.NewBuffer(data))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	resp, err := c.HTTP.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("connection failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, parseError(resp)
-	}
-
-	var org types.Organization
-	if err := json.NewDecoder(resp.Body).Decode(&org); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
-	}
-
-	return &org, nil
-}
-
-func (c *Client) CreateProject(orgID, name, slug, description, token string) (*types.Project, error) {
-	payload := map[string]string{
-		"organization_id": orgID,
-		"name":            name,
-		"slug":            slug,
-		"description":     description,
+		"name":        name,
+		"slug":        slug,
+		"description": description,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

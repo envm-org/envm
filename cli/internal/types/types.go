@@ -1,19 +1,11 @@
 package types
 
-type Organization struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Slug      string `json:"slug"`
-	CreatedAt string `json:"created_at"`
-}
-
 type Project struct {
-	ID             string `json:"id"`
-	OrganizationID string `json:"organization_id"`
-	Name           string `json:"name"`
-	Slug           string `json:"slug"`
-	Description    string `json:"description"`
-	CreatedAt      string `json:"created_at"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type Environment struct {
@@ -32,7 +24,6 @@ type User struct {
 }
 
 type ProjectConfig struct {
-	OwnerID     string            `json:"ownerId"`
 	ProjectID   string            `json:"projectId"`
 	Envs        []EnvEntry        `json:"envs"`
 	Credentials []CredentialEntry `json:"credentials"`

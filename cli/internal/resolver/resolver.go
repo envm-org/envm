@@ -16,35 +16,10 @@ func New(c *client.Client) *Resolver {
 	return &Resolver{Client: c}
 }
 
-func (r *Resolver) ResolveOrg(slug string) (string, error) {
-	body, err := r.Client.Get("/org/list")
+func (r *Resolver) ResolveProject(projectSlug string) (string, error) {
+	body, err := r.Client.Get("/projects")
 	if err != nil {
-		return "", fmt.Errorf("failed to list organizations: %w", err)
-	}
-
-	var orgs []types.Organization
-	if err := json.Unmarshal(body, &orgs); err != nil {
-		return "", fmt.Errorf("failed to parse organizations: %w", err)
-	}
-
-	for _, org := range orgs {
-		if org.Slug == slug {
-			return org.ID, nil
-		}
-	}
-
-	return "", fmt.Errorf("organization with slug '%s' not found", slug)
-}
-
-func (r *Resolver) ResolveProject(orgSlug, projectSlug string) (string, error) {
-	orgID, err := r.ResolveOrg(orgSlug)
-	if err != nil {
-		return "", err
-	}
-
-	body, err := r.Client.Get("/project/list?organization_id=" + orgID)
-	if err != nil {
-		return "", fmt.Errorf("failed to list projects for org '%s': %w", orgSlug, err)
+		return "", fmt.Errorf("failed to list projects: %w", err)
 	}
 
 	var projects []types.Project
@@ -58,16 +33,16 @@ func (r *Resolver) ResolveProject(orgSlug, projectSlug string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("project with slug '%s' not found in org '%s'", projectSlug, orgSlug)
+	return "", fmt.Errorf("project with slug '%s' not found", projectSlug)
 }
 
-func (r *Resolver) ResolveEnv(orgSlug, projectSlug, envSlug string) (string, error) {
-	projectID, err := r.ResolveProject(orgSlug, projectSlug)
+func (r *Resolver) ResolveEnv(projectSlug, envSlug string) (string, error) {
+	projectID, err := r.ResolveProject(projectSlug)
 	if err != nil {
 		return "", err
 	}
 
-	body, err := r.Client.Get("/env/list?project_id=" + projectID)
+	body, err := r.Client.Get(fmt.Sprintf("/env/list?project_id=%s", projectID))
 	if err != nil {
 		return "", fmt.Errorf("failed to list environments for project '%s': %w", projectSlug, err)
 	}
