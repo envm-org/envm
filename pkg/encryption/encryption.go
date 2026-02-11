@@ -11,7 +11,6 @@ import (
 	"io"
 )
 
-// Encrypt encrypts plain text string into cipher text string
 func Encrypt(plaintext string, keyHex string) (string, error) {
 	key, err := hex.DecodeString(keyHex)
 	if err != nil {
@@ -37,7 +36,6 @@ func Encrypt(plaintext string, keyHex string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-// Decrypt decrypts cipher text string into plain text string
 func Decrypt(encryptedString string, keyHex string) (string, error) {
 	key, err := hex.DecodeString(keyHex)
 	if err != nil {
