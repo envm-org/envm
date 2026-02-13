@@ -77,48 +77,50 @@ func (app *application) mount() http.Handler {
 	usersService := users.NewService(q)
 	usersHandler := users.NewHandler(usersService)
 
-	r.Route("/auth", func(r chi.Router) {
-		r.Post("/login", authHandler.Login)
-		r.Post("/register", authHandler.Register)
-		r.Post("/refresh", authHandler.Refresh)
-		r.Post("/logout", authHandler.Logout)
-	})
-
-	// Protected Routes
-	r.Group(func(r chi.Router) {
-		r.Use(authMiddleware)
-
-		r.Route("/users", func(r chi.Router) {
-			r.Get("/", usersHandler.GetUser)
-			r.Put("/", usersHandler.UpdateUser)
-			r.Delete("/", usersHandler.DeleteUser)
-			r.Get("/list", usersHandler.ListUsers)
-			r.Get("/email", usersHandler.GetUserByEmail)
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login", authHandler.Login)
+			r.Post("/register", authHandler.Register)
+			r.Post("/refresh", authHandler.Refresh)
+			r.Post("/logout", authHandler.Logout)
 		})
 
-		r.Route("/env", func(r chi.Router) {
-			r.Post("/", envHandler.CreateEnv)
-			r.Get("/", envHandler.GetEnv)
-			r.Put("/", envHandler.UpdateEnv)
-			r.Delete("/", envHandler.DeleteEnv)
-			r.Get("/list", envHandler.ListEnvs)
+		// Protected Routes
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware)
 
-			r.Post("/variable", envHandler.CreateVariable)
-			r.Put("/variable", envHandler.UpdateVariable)
-			r.Delete("/variable", envHandler.DeleteVariable)
-			r.Get("/variable/list", envHandler.ListVariables)
-		})
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/", usersHandler.GetUser)
+				r.Put("/", usersHandler.UpdateUser)
+				r.Delete("/", usersHandler.DeleteUser)
+				r.Get("/list", usersHandler.ListUsers)
+				r.Get("/email", usersHandler.GetUserByEmail)
+			})
 
-		r.Route("/projects", func(r chi.Router) {
-			r.Get("/", projectHandler.ListProjects)
-			r.Post("/", projectHandler.CreateProject)
-			r.Get("/detail", projectHandler.GetProject)
-			r.Put("/detail", projectHandler.UpdateProject)
-			r.Delete("/detail", projectHandler.DeleteProject)
+			r.Route("/env", func(r chi.Router) {
+				r.Post("/", envHandler.CreateEnv)
+				r.Get("/", envHandler.GetEnv)
+				r.Put("/", envHandler.UpdateEnv)
+				r.Delete("/", envHandler.DeleteEnv)
+				r.Get("/list", envHandler.ListEnvs)
 
-			r.Post("/members", projectHandler.AddMember)
-			r.Delete("/members", projectHandler.RemoveMember)
-			r.Get("/members", projectHandler.ListMembers)
+				r.Post("/variable", envHandler.CreateVariable)
+				r.Put("/variable", envHandler.UpdateVariable)
+				r.Delete("/variable", envHandler.DeleteVariable)
+				r.Get("/variable/list", envHandler.ListVariables)
+			})
+
+			r.Route("/projects", func(r chi.Router) {
+				r.Get("/", projectHandler.ListProjects)
+				r.Post("/", projectHandler.CreateProject)
+				r.Get("/detail", projectHandler.GetProject)
+				r.Put("/detail", projectHandler.UpdateProject)
+				r.Delete("/detail", projectHandler.DeleteProject)
+
+				r.Post("/members", projectHandler.AddMember)
+				r.Delete("/members", projectHandler.RemoveMember)
+				r.Get("/members", projectHandler.ListMembers)
+			})
 		})
 	})
 

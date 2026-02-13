@@ -14,7 +14,7 @@ restore_stash() {
 }
 trap restore_stash EXIT
 
-# 1. Format Check (gofmt)
+# Format Check (gofmt)
 echo "Running gofmt..."
 GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 
@@ -28,7 +28,7 @@ if [ -n "$GO_FILES" ]; then
     fi
 fi
 
-# 2. Lint Check (golangci-lint or go vet)
+# Lint Check (golangci-lint or go vet)
 if command -v golangci-lint >/dev/null 2>&1; then
     echo "Running golangci-lint..."
     golangci-lint run ./...

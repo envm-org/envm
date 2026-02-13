@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Client struct {
@@ -50,6 +51,14 @@ func (c *Client) doRequest(method, path string, body interface{}) ([]byte, error
 	u, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid base URL: %w", err)
+	}
+
+	if !strings.HasPrefix(path, "/api/v1") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api/v1" + path
+		} else {
+			path = "/api/v1/" + path
+		}
 	}
 
 	rel, err := url.Parse(path)
