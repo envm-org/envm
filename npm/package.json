@@ -1,0 +1,35 @@
+{
+  "name": "envm",
+  "version": "0.1.0",
+  "description": "Secure, Simple, Synchronized Environment Management",
+  "bin": {
+    "envm": "./bin/envm.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/envm-org/envm.git",
+    "directory": "npm"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "variables",
+    "secrets",
+    "management",
+    "cli"
+  ],
+  "author": "Nyamboga Hezron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/envm-org/envm/issues"
+  },
+  "homepage": "https://envm.vercel.app",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "tar": "^7.4.3",
+    "unzipper": "^0.12.3"
+  }
+}

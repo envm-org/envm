@@ -68,7 +68,7 @@ Before you begin, ensure you have the following installed:
    docker compose up --build
    ```
    
-   The application will be available at `http://localhost:5000`
+   The application will be available at [https://envm.vercel.app/](https://envm.vercel.app/)
 
 7. **Run the application** (alternative to Docker):
    ```bash
@@ -327,7 +327,7 @@ go test -race ./...
 
 - **GitHub Discussions**: For questions and discussions
 - **GitHub Issues**: For bug reports and feature requests
-- **Documentation**: Check our [docs](https://docs.envm.dev) first
+- **Documentation**: Check our [docs](https://envm-docs.vercel.app/) first
 
 ### Maintainers
 

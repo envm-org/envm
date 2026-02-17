@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# Whitelist package files
+!package.json
+!README.md
+!LICENSE
+!scripts/**
+!bin/envm.js

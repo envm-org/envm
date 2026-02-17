@@ -90,7 +90,7 @@
 
 3. **Access ENVM**:
    - API: `http://localhost:5000`
-   - Web UI: `http://localhost:5000` (coming soon)
+   - Web UI: [https://envm.vercel.app/](https://envm.vercel.app/)
 
 4. **Verify the installation**:
    ```bash
@@ -141,7 +141,7 @@ Security is paramount for ENVM. If you discover a security vulnerability, please
 
 ## 📞 Support & Community
 
-- **Documentation**: [docs.envm.dev](https://docs.envm.dev) (coming soon)
+- **Documentation**: [envm-docs.vercel.app](https://envm-docs.vercel.app/)
 - **Issues**: [GitHub Issues](https://github.com/envm-org/envm/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/envm-org/envm/discussions)
 - **Email**: support@envm.dev
