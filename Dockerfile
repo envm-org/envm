@@ -1,5 +1,5 @@
 
-ARG GO_VERSION=1.25.5
+ARG GO_VERSION=1.25.0
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
@@ -12,7 +12,7 @@ ARG TARGETARCH
 
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/envm ./cmd/envm
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/envm-server ./cmd
 
 FROM alpine:latest AS final
 
@@ -34,8 +34,8 @@ RUN adduser \
     appuser
 USER appuser
 
-COPY --from=build /bin/envm /bin/
+COPY --from=build /bin/envm-server /bin/
 
 EXPOSE 5000
 
-ENTRYPOINT [ "/bin/envm" ]
+ENTRYPOINT [ "/bin/envm-server" ]

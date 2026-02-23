@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
-  <a href="https://golang.org/dl/"><img src="https://img.shields.io/badge/Go-1.25.5-blue.svg" alt="Go Version"/></a>
+  <a href="https://golang.org/dl/"><img src="https://img.shields.io/badge/Go-1.25.0-blue.svg" alt="Go Version"/></a>
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Ready-blue.svg" alt="Docker"/></a>
 </p>
 
@@ -104,15 +104,15 @@ Create a `.env` file in the root directory with the following variables:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URI` | Yes | PostgreSQL connection string |
-| `JWT_SECRET` | Yes | Secret key for JWT signing |
-| `API_PORT` | No | API server port (default: 5000) |
+| `TOKEN_SECRET` | Yes | Secret key for JWT signing |
+| `ADDR` | No | API server port (default: :5000) |
 | `ENCRYPTION_KEY` | Yes | Key for encrypting environment variables |
 
 Example `.env`:
 ```bash
 DATABASE_URI=postgres://postgres:password@localhost:5432/envm?sslmode=disable
-JWT_SECRET=your-super-secret-jwt-key
-API_PORT=5000
+TOKEN_SECRET=your-super-secret-jwt-key
+ADDR=:5000
 ENCRYPTION_KEY=your-32-byte-encryption-key
 ```
 

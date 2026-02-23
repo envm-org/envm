@@ -25,7 +25,7 @@ This project adheres to a Code of Conduct that all contributors are expected to 
 
 Before you begin, ensure you have the following installed:
 
-- **Go 1.25.5 or higher** - [Download Go](https://golang.org/dl/)
+- **Go 1.25.0 or higher** - [Download Go](https://golang.org/dl/)
 - **Docker and Docker Compose** - [Install Docker](https://docs.docker.com/get-docker/)
 - **PostgreSQL** (for local development) - [Install PostgreSQL](https://www.postgresql.org/download/)
 - **Make** - Usually pre-installed on Unix systems

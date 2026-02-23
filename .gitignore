@@ -5,6 +5,9 @@
 *.so
 *.dylib
 .env
+.env.production
+.env.development
+.env.test
 .idea
 go.work
 bin/

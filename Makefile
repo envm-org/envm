@@ -1,4 +1,4 @@
-.PHONY: build run test clean migration migrate-up migrate-down migrate-status lint format install-hooks build-cli build-docs build-all run-docs help
+.PHONY: build run test clean migration migrate-up migrate-down migrate-status lint format install-hooks build-cli build-all help
 
 # Load environment variables from .env
 ifneq (,$(wildcard .env))
@@ -15,6 +15,9 @@ build:
 	go build -o bin/$(BINARY_NAME) ./cmd
 
 run: build
+	./bin/$(BINARY_NAME)
+
+start:
 	./bin/$(BINARY_NAME)
 
 test:
@@ -55,20 +58,15 @@ install-hooks:
 build-cli:
 	cd cli && go build -o ../bin/envm .
 
-build-docs:
-	cd docs && npm install && npm run build
-
-build-all: build build-cli build-docs
-
-run-docs:
-	cd docs && npm run start
+build-all: build build-cli
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
 	@echo "  build           Build the server binary"
-	@echo "  run             Run the server locally"
+	@echo "  run             Run the server locally (builds first)"
+	@echo "  start           Start the server locally (without building)"
 	@echo "  test            Run tests"
 	@echo "  clean           Clean build artifacts"
 	@echo "  migration       Create a new migration (usage: make migration name=...)"
@@ -81,6 +79,4 @@ help:
 	@echo "  format          Format code"
 	@echo "  install-hooks   Install git hooks"
 	@echo "  build-cli       Build the CLI binary"
-	@echo "  build-docs      Build the documentation"
-	@echo "  build-all       Build everything (server, cli, docs)"
-	@echo "  run-docs        Run the documentation server"
+	@echo "  build-all       Build everything (server, cli)"
