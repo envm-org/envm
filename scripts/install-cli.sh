@@ -7,9 +7,8 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Build the CLI
 echo "Building envm..."
-cd "$PROJECT_ROOT/cli"
-go build -o ../bin/envm .
-cd ..
+cd "$PROJECT_ROOT"
+make build-cli
 
 # Install to local bin to avoid sudo
 GLOBAL_BIN="$HOME/.local/bin"
@@ -17,7 +16,7 @@ mkdir -p "$GLOBAL_BIN"
 TARGET="$GLOBAL_BIN/envm"
 
 echo "Installing to $TARGET..."
-cp "$PROJECT_ROOT/bin/envm" "$TARGET"
+cp "$PROJECT_ROOT/cli/bin/cli" "$TARGET"
 
 echo "Installation complete!"
 echo "You can now run 'envm'"

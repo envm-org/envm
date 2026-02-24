@@ -1,114 +1,47 @@
-# ENVM - Environment Variable Management
+# envm
 
-<p align="center">
-  <img src="../assets/logo.png" alt="ENVM Logo" width="200"/>
+ENVM - Environment Variable Management
+
+<p align="left">
+  <img src="assets/logo.png" alt="ENVM Logo" width="200"/>
 </p>
 
-<h3 align="center">Secure, Simple, Synchronized Environment Management</h3>
-
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
-  <a href="https://golang.org/dl/"><img src="https://img.shields.io/badge/Go-1.25.0-blue.svg" alt="Go Version"/></a>
-  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Ready-blue.svg" alt="Docker"/></a>
-</p>
-
-<p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-documentation">Documentation</a> •
-  <a href="#-contributing">Contributing</a>
-</p>
-
----
-
-## 📖 About
+[![License-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go-Version](https://img.shields.io/badge/Go-1.25.0-blue.svg)](https://golang.org/dl/)
+[![Docker-Ready](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
 **ENVM** is a powerful environment variable management and synchronization tool designed to help developers and teams securely manage, share, and sync environment variables across projects and environments. Built with security as a top priority, ENVM provides encryption at rest, role-based access control, and seamless collaboration features.
 
-### Why ENVM?
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
 
-- **🔒 Secure by Default**: AES-256 encryption, audit logging, and RBAC
-- **🤝 Team Collaboration**: Share sensitive environment variables safely without exposure
-- **🔄 Multi-Environment Support**: Manage dev, staging, and production environments effortlessly
-- **📦 Universal Format**: `.envm` file format with syntax highlighting and IDE support
-- **🚀 Developer Friendly**: CLI, Web UI, and API access
-- **🌐 Cross-Platform**: Linux, macOS, Windows support
+# Features
 
-## ✨ Features
+- **Secure**: AES-256 encryption, audit logging, and RBAC
+- **Team Collaboration**: Share sensitive environment variables safely without exposure
+- **Multi-Environment Support**: Manage dev, staging, and production environments effortlessly
+- **API-First**: RESTful API for programmatic access
+- **CLI Tool**: Command-line interface for CI/CD integration
 
-### Core Features
+# Installation
 
-- ✅ **Secure Variable Management**: Create, update, delete, and organize environment variables
-- ✅ **Encryption**: AES-256 encryption for stored variables
-- ✅ **Access Control**: Role-based permissions (read/write/admin)
-- ✅ **Audit Logging**: Track who accessed or modified variables
-- ✅ **Project Organization**: Group variables by projects and environments
-- ✅ **Team Collaboration**: Share variables securely within organizations
-- ✅ **API-First**: RESTful API for programmatic access
-- ✅ **CLI Tool**: Command-line interface for CI/CD integration
-- ✅ **Web Interface**: Modern, responsive web UI
+```sh
+# Clone the repository
+git clone https://github.com/envm-org/envm.git
+cd envm
 
-### Security Features
+# Start the application services
+docker compose up -d
+```
 
-- 🔐 Encryption at rest and in transit (TLS 1.3)
-- 🔑 JWT-based authentication with refresh token rotation
-- 👥 Role-based access control (RBAC)
-- 📊 Comprehensive audit logging
-- 🔄 Secret rotation reminders
-- 🛡️ Rate limiting and brute force protection
-- 🔍 Input validation and sanitization
+## Configuration
 
-### Upcoming Features
+Create a `.env` file in the root directory:
 
-- [ ] HashiCorp Vault integration
-- [ ] AWS Secrets Manager integration
-- [ ] Azure Key Vault integration
-- [ ] Automatic secret rotation
-- [ ] WebSocket real-time sync
-- [ ] NPM package wrapper
-- [ ] VS Code extension
-- [ ] Mobile app
-
-## � Quick Start
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/envm-org/envm.git
-   cd envm
-   ```
-
-2. **Start the application**:
-   ```bash
-   docker compose up --build
-   ```
-
-3. **Access ENVM**:
-   - API: `http://localhost:5000`
-   - Web UI: [https://envm.vercel.app/](https://envm.vercel.app/)
-
-4. **Verify the installation**:
-   ```bash
-   curl -i http://localhost:5000/health
-   ```
-
-### Configuration
-
-Create a `.env` file in the root directory with the following variables:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URI` | Yes | PostgreSQL connection string |
-| `TOKEN_SECRET` | Yes | Secret key for JWT signing |
-| `ADDR` | No | API server port (default: :5000) |
-| `ENCRYPTION_KEY` | Yes | Key for encrypting environment variables |
-
-Example `.env`:
 ```bash
 DATABASE_URI=postgres://postgres:password@localhost:5432/envm?sslmode=disable
 TOKEN_SECRET=your-super-secret-jwt-key
@@ -116,52 +49,181 @@ ADDR=:5000
 ENCRYPTION_KEY=your-32-byte-encryption-key
 ```
 
-## 📚 Documentation
+# Usage
 
-## 🤝 Contributing
+```sh
+envm COMMAND
+# runs the command
+envm --help COMMAND
+# outputs help for specific command
+```
+
+# Commands
+
+<!-- commands -->
+* [`envm env`](#envm-env)
+* [`envm init`](#envm-init)
+* [`envm load`](#envm-load)
+* [`envm login`](#envm-login)
+* [`envm logout`](#envm-logout)
+* [`envm project`](#envm-project)
+* [`envm pull`](#envm-pull)
+* [`envm push`](#envm-push)
+* [`envm register`](#envm-register)
+* [`envm users`](#envm-users)
+* [`envm whoami`](#envm-whoami)
+
+## `envm env`
+
+Manage environment variables
+
+```
+USAGE
+  $ envm env [COMMAND]
+
+DESCRIPTION
+  Create, list, or delete environment variables.
+```
+
+## `envm init`
+
+Initialize ENVM configuration in the current directory
+
+```
+USAGE
+  $ envm init
+
+DESCRIPTION
+  Creates an .envm file and links to your current project.
+```
+
+## `envm load`
+
+Load environment variables into the current shell
+
+```
+USAGE
+  $ envm load
+
+DESCRIPTION
+  Sources environment variables managed by ENVM into your session.
+```
+
+## `envm login`
+
+log in with your ENVM account
+
+```
+USAGE
+  $ envm login
+
+DESCRIPTION
+  Authenticates you with the ENVM server.
+```
+
+## `envm logout`
+
+log out
+
+```
+USAGE
+  $ envm logout
+
+DESCRIPTION
+  Clears the local authentication token.
+```
+
+## `envm project`
+
+Manage projects
+
+```
+USAGE
+  $ envm project [COMMAND]
+
+DESCRIPTION
+  Create, read, or configure your projects.
+```
+
+## `envm pull`
+
+Pull environment variables from the server
+
+```
+USAGE
+  $ envm pull
+
+DESCRIPTION
+  Fetches the latest variables for the current project.
+```
+
+## `envm push`
+
+Push environment variables to the server
+
+```
+USAGE
+  $ envm push
+
+DESCRIPTION
+  Uploads local changes to the configured environment.
+```
+
+## `envm register`
+
+Register a new ENVM account
+
+```
+USAGE
+  $ envm register
+
+DESCRIPTION
+  Creates a new user profile on the ENVM server.
+```
+
+## `envm users`
+
+Manage users
+
+```
+USAGE
+  $ envm users [COMMAND]
+
+DESCRIPTION
+  Administer users on the platform.
+```
+
+## `envm whoami`
+
+show the username you are logged in as
+
+```
+USAGE
+  $ envm whoami
+
+DESCRIPTION
+  Displays your active session details.
+```
+
+# Documentation
+
+- **Documentation**: [envm-docs.vercel.app](https://envm-docs.vercel.app/)
+- **CLI Reference**: [CLI Reference](CLI_REFERENCE.md)
+- **Issues**: [GitHub Issues](https://github.com/envm-org/envm/issues)
+- **Email**: support@envm.dev
+
+# Contributing
 
 We welcome contributions from the community! 
 
 - Read our [Contributing Guidelines](CONTRIBUTING.md) to get started
-- Check our [Code of Conduct](CODE_CODUCT.md)
+- Check our [Code of Conduct](CODE_OF_CONDUCT.md)
 - Browse [open issues](https://github.com/envm-org/envm/issues) or create a new one
-- Submit pull requests with improvements
 
-For developers, see [CLI_REFERENCE.md](CLI_REFERENCE.md) for development setup and commands.
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔒 Security
+## Security
 
-Security is paramount for ENVM. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
-
-**Do not report security vulnerabilities through public GitHub issues.**
-
-## 📞 Support & Community
-
-- **Documentation**: [envm-docs.vercel.app](https://envm-docs.vercel.app/)
-- **Issues**: [GitHub Issues](https://github.com/envm-org/envm/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/envm-org/envm/discussions)
-- **Email**: support@envm.dev
-
-## � Project Status
-
-ENVM is currently in active development. We're working towards our MVP release:
-
-- [x] Core API implementation
-- [x] Authentication & authorization
-- [x] PostgreSQL integration
-- [x] Docker setup
-- [ ] CLI tool
-- [ ] Web UI
-- [ ] Documentation site
-- [ ] Public beta release
-
-See our [project roadmap](https://github.com/envm-org/envm/projects) for upcoming features.
-
-## 🙏 Acknowledgments
-
-Thanks to all our [contributors](https://github.com/envm-org/envm/graphs/contributors)!
-
+Security is paramount for ENVM. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure. **Do not report security vulnerabilities through public GitHub issues.**

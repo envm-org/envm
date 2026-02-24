@@ -16,19 +16,28 @@ var registerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ui.PrintLogo()
 
-		fullName := ui.Prompt("Full Name")
+		fullName, _ := cmd.Flags().GetString("name")
+		if fullName == "" {
+			fullName = ui.Prompt("Full Name")
+		}
 		if fullName == "" {
 			ui.PrintError(fmt.Errorf("name is required"))
 			return
 		}
 
-		email := ui.Prompt("Email")
+		email, _ := cmd.Flags().GetString("email")
+		if email == "" {
+			email = ui.Prompt("Email")
+		}
 		if email == "" {
 			ui.PrintError(fmt.Errorf("email is required"))
 			return
 		}
 
-		password := ui.PromptPassword("Password")
+		password, _ := cmd.Flags().GetString("password")
+		if password == "" {
+			password = ui.PromptPassword("Password")
+		}
 		if password == "" {
 			ui.PrintError(fmt.Errorf("password is required"))
 			return
@@ -74,5 +83,8 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
+	registerCmd.Flags().StringP("name", "n", "", "Full name for registration")
+	registerCmd.Flags().StringP("email", "e", "", "Email for registration")
+	registerCmd.Flags().StringP("password", "p", "", "Password for registration")
 	rootCmd.AddCommand(registerCmd)
 }

@@ -10,6 +10,7 @@ BINARY_NAME=envm-server
 MIGRATION_DIR=./internal/adapters/postgresql/schema/migrations
 DB_DRIVER=postgres
 DB_STRING=$(DATABASE_URI)
+API_URL ?= http://localhost:8080
 
 build:
 	go build -o bin/$(BINARY_NAME) ./cmd
@@ -56,9 +57,7 @@ install-hooks:
 	git config core.hooksPath githooks
 
 build-cli:
-	cd cli && go build -o ../bin/envm .
-
-build-all: build build-cli
+	cd cli && go build -o bin/cli main.go
 
 help:
 	@echo "Usage: make [target]"

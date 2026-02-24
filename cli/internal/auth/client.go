@@ -11,19 +11,12 @@ import (
 	"github.com/envm-org/cli/internal/types"
 )
 
-const (
-	defaultAPIURL = "http://localhost:8080"
-)
-
 type Client struct {
 	BaseURL string
 	HTTP    *http.Client
 }
 
 func NewClient(baseURL string) *Client {
-	if baseURL == "" {
-		baseURL = defaultAPIURL
-	}
 	return &Client{
 		BaseURL: baseURL,
 		HTTP: &http.Client{
@@ -42,7 +35,7 @@ func (c *Client) Login(email, password string) (*LoginResponse, error) {
 		return nil, err
 	}
 
-	resp, err := c.HTTP.Post(fmt.Sprintf("%s/auth/login", c.BaseURL), "application/json", bytes.NewBuffer(data))
+	resp, err := c.HTTP.Post(fmt.Sprintf("%s/api/v1/auth/login", c.BaseURL), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return nil, fmt.Errorf("connection failed: %w", err)
 	}
@@ -71,7 +64,7 @@ func (c *Client) Register(fullName, email, password string) (*User, error) {
 		return nil, err
 	}
 
-	resp, err := c.HTTP.Post(fmt.Sprintf("%s/auth/register", c.BaseURL), "application/json", bytes.NewBuffer(data))
+	resp, err := c.HTTP.Post(fmt.Sprintf("%s/api/v1/auth/register", c.BaseURL), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return nil, fmt.Errorf("connection failed: %w", err)
 	}

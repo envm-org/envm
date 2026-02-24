@@ -15,6 +15,8 @@ import (
 var (
 	cfgFile string
 
+	DefaultAPIURL = "http://localhost:8080"
+
 	rootCmd = &cobra.Command{
 		Use:   "cli",
 		Short: "Command line interface for envm",
@@ -39,7 +41,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default locations: ., $HOME/.envm-cli/)")
-	rootCmd.PersistentFlags().String("api-url", "http://localhost:8080", "API URL (default: http://localhost:8080)")
+	rootCmd.PersistentFlags().String("api-url", DefaultAPIURL, "API URL (default: "+DefaultAPIURL+")")
 	viper.BindPFlag("api-url", rootCmd.PersistentFlags().Lookup("api-url"))
 }
 
@@ -49,6 +51,8 @@ func initializeConfig(cmd *cobra.Command) error {
 	viper.SetEnvPrefix("ENVM_CLI")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
+
+	viper.BindEnv("api-url", "API_URL")
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
