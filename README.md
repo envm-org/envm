@@ -1,14 +1,19 @@
-# envm
+<p align="center">
+  <img src="https://github.com/envm-org/envm/blob/dev/assets/logo.png?raw=true" alt="ENVM Logo" width="200"/>
 
-ENVM - Environment Variable Management
+</p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/envm-org/envm/main/assets/logo.png" alt="ENVM Logo" width="200"/>
+ <h1>ENVM - Environment Variable Management</h1>
 </p>
+
+<p align="center">
 
 [![License-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go-Version](https://img.shields.io/badge/Go-1.25.0-blue.svg)](https://golang.org/dl/)
 [![Docker-Ready](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+
+</p>
 
 **ENVM** is a powerful environment variable management and synchronization tool designed to help developers and teams securely manage, share, and sync environment variables across projects and environments. Built with security as a top priority, ENVM provides encryption at rest, role-based access control, and seamless collaboration features.
 
@@ -33,7 +38,7 @@ ENVM - Environment Variable Management
 # Clone the repository
 git clone https://github.com/envm-org/envm.git
 cd envm
-
+# 
 # Start the application services
 docker compose up -d
 ```
