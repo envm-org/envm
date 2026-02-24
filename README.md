@@ -2,8 +2,8 @@
 
 ENVM - Environment Variable Management
 
-<p align="left">
-  <img src="assets/logo.png" alt="ENVM Logo" width="200"/>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/envm-org/envm/main/assets/logo.png" alt="ENVM Logo" width="200"/>
 </p>
 
 [![License-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
