@@ -138,8 +138,12 @@ var pullCmd = &cobra.Command{
 			// Group variables by their path
 			for _, v := range vars {
 				path, ok := v["path"].(string)
-				if !ok || path == "" {
-					path = ".env" // Default fallback
+				if !ok || path == "" || path == ".env" {
+					if name == "default" {
+						path = ".env"
+					} else {
+						path = fmt.Sprintf(".env.%s", name)
+					}
 				}
 				fileMap[path] = append(fileMap[path], v)
 			}

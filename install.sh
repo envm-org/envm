@@ -39,10 +39,15 @@ if ! command -v curl &> /dev/null; then
     exit 1
 fi
 
-# Fetch latest release
-echo "${green}==> Fetching latest release information...${reset}"
-# Using GitHub API to get the latest release tag
-LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+# Determine release version
+if [ -n "$VERSION" ]; then
+    echo "${green}==> Using specified version: ${VERSION}${reset}"
+    LATEST_RELEASE="$VERSION"
+else
+    echo "${green}==> Fetching latest release information...${reset}"
+    # Using GitHub API to get the latest release tag
+    LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+fi
 
 if [ -z "$LATEST_RELEASE" ]; then
     echo "${red}Error: Failed to fetch the latest release. Please check your internet connection or GitHub API limits.${reset}"
@@ -120,4 +125,4 @@ if [ -f "$HOME/.zshrc" ]; then
     fi
 fi
 
-echo "${green}${bold}All set! Restart your terminal to use autocompletions!${bold}${reset}"
+echo "${green}${bold}All set! Restart your terminal to use envm!${bold}${reset}"

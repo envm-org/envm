@@ -34,11 +34,22 @@
 
 # Installation
 
+To install the pre-compiled binary directly:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/envm-org/envm/dev/install.sh | bash
+```
+
+Alternatively, if you want to install locally from the source:
+
 ```sh
 # Clone the repository
 git clone https://github.com/envm-org/envm.git
 cd envm
-# 
+
+# Install the CLI locally
+./scripts/install-cli.sh
+
 # Start the application services
 docker compose up -d
 ```
@@ -66,6 +77,7 @@ envm --help COMMAND
 # Commands
 
 <!-- commands -->
+* [`envm completion`](#envm-completion)
 * [`envm env`](#envm-env)
 * [`envm init`](#envm-init)
 * [`envm load`](#envm-load)
@@ -75,9 +87,21 @@ envm --help COMMAND
 * [`envm pull`](#envm-pull)
 * [`envm push`](#envm-push)
 * [`envm register`](#envm-register)
+* [`envm uninstall`](#envm-uninstall)
 * [`envm users`](#envm-users)
+* [`envm version`](#envm-version)
 * [`envm whoami`](#envm-whoami)
+## `envm completion`
 
+Generate the autocompletion script for the specified shell
+
+```
+USAGE
+  $ envm completion [bash|zsh|fish|powershell]
+
+DESCRIPTION
+  Generates autocompletions. Automatically installed via install.sh for bash and zsh.
+```
 ## `envm env`
 
 Manage environment variables
@@ -186,6 +210,18 @@ DESCRIPTION
   Creates a new user profile on the ENVM server.
 ```
 
+## `envm uninstall`
+
+Uninstall the envm CLI
+
+```
+USAGE
+  $ envm uninstall
+
+DESCRIPTION
+  Removes the envm binary and its configuration directory from your system.
+```
+
 ## `envm users`
 
 Manage users
@@ -208,6 +244,20 @@ USAGE
 
 DESCRIPTION
   Displays your active session details.
+```
+
+## `envm version`
+
+Print the CLI version
+
+```
+USAGE
+  $ envm version
+  $ envm --version
+  $ envm -v
+
+DESCRIPTION
+  Displays the current version of the envm CLI.
 ```
 
 # Documentation
