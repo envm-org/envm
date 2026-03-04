@@ -1,4 +1,4 @@
-name: Release
+name: Release ENVM to NPM
 
 on:
   push:
