@@ -182,7 +182,7 @@ func scanEnvFiles() ([]types.EnvEntry, error) {
 			return nil
 		}
 
-		if strings.HasPrefix(info.Name(), ".env") {
+		if strings.HasPrefix(info.Name(), ".env") && !strings.Contains(info.Name(), ".example") {
 			name := strings.TrimPrefix(info.Name(), ".env")
 			if name == "" || name == "." {
 				name = "default"
