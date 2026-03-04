@@ -54,7 +54,7 @@ format:
 	gofmt -w .
 
 install-hooks:
-	git config core.hooksPath githooks
+	npm run prepare
 
 build-cli:
 	cd cli && go build -o bin/cli main.go
