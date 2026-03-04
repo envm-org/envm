@@ -27,3 +27,25 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     echo "Add the following line to your shell configuration file (e.g., ~/.bashrc, ~/.zshrc):"
     echo 'export PATH="$HOME/.local/bin:$PATH"'
 fi
+
+# Setup completions
+echo ""
+echo "Setting up shell autocompletions..."
+
+# Setup Bash
+if [ -f "$HOME/.bashrc" ]; then
+    if ! grep -q "envm completion bash" "$HOME/.bashrc"; then
+        echo -e '\n# envm autocompletion\nif command -v envm >/dev/null 2>&1; then\n  source <(envm completion bash)\nfi' >> "$HOME/.bashrc"
+        echo "  - Added bash autocompletion to ~/.bashrc"
+    fi
+fi
+
+# Setup Zsh
+if [ -f "$HOME/.zshrc" ]; then
+    if ! grep -q "envm completion zsh" "$HOME/.zshrc"; then
+        echo -e '\n# envm autocompletion\nif command -v envm >/dev/null 2>&1; then\n  source <(envm completion zsh)\nfi' >> "$HOME/.zshrc"
+        echo "  - Added zsh autocompletion to ~/.zshrc"
+    fi
+fi
+
+echo "All set! Restart your terminal to use envm!"

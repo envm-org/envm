@@ -59,6 +59,11 @@ install-hooks:
 build-cli:
 	cd cli && go build -o bin/cli main.go
 
+
+cli:
+	cd cli && go run main.go
+
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""

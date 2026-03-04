@@ -47,7 +47,7 @@ var pullCmd = &cobra.Command{
 				}
 
 				for i, p := range projects {
-					fmt.Printf("[%d] %s (%s)\n", i+1, p.Name, p.Slug)
+					ui.PrintSuccess(fmt.Sprintf("[%d] %s (%s)", i+1, p.Name, p.Slug))
 				}
 
 				idxStr := ui.Prompt("Select Project (number)")
