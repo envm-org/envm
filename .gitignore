@@ -13,3 +13,4 @@ go.work
 bin/
 tmp/
 logs/
+node_modules/
