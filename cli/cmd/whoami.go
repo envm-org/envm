@@ -31,12 +31,10 @@ var whoamiCmd = &cobra.Command{
 			return
 		}
 
-		// Display user info
 		ui.PrintLogo()
 		ui.RenderKV("Current User", map[string]string{
 			"Name":  creds.FullName,
 			"Email": creds.Email,
-			"ID":    creds.UserID,
 		})
 	},
 }

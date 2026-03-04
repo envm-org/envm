@@ -18,12 +18,12 @@ var (
 	DefaultAPIURL = "http://localhost:8080"
 
 	rootCmd = &cobra.Command{
-		Use:   "cli",
-		Short: "Command line interface for envm",
+		Use:     "envm",
+		Short:   "Command line interface for envm",
+		Version: "v.0.0.1", // TODO: Read this from build flags or a version file
 		// PersistentPreRunE is called after flags are parsed but before the
 		// command's RunE function is called.
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			ui.PrintLogo()
 			return initializeConfig(cmd)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -33,6 +33,7 @@ var (
 )
 
 func Execute() {
+	ui.SetupCobraHelp(rootCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -43,6 +44,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default locations: ., $HOME/.envm-cli/)")
 	rootCmd.PersistentFlags().String("api-url", DefaultAPIURL, "API URL (default: "+DefaultAPIURL+")")
 	viper.BindPFlag("api-url", rootCmd.PersistentFlags().Lookup("api-url"))
+
+	// Hide global flags from the help display
+	rootCmd.PersistentFlags().MarkHidden("config")
+	rootCmd.PersistentFlags().MarkHidden("api-url")
 }
 
 func initializeConfig(cmd *cobra.Command) error {

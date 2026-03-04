@@ -94,13 +94,13 @@ var pushCmd = &cobra.Command{
 					if err := updateVariable(c, envID, key, value, envEntry.Path, creds.Token); err != nil {
 						ui.PrintError(fmt.Errorf("failed to update variable %s: %w", key, err))
 					} else {
-						fmt.Printf("  Updated %s\n", key)
+						ui.PrintSuccess(fmt.Sprintf("  Updated %s", key))
 					}
 				} else {
 					if err := createVariable(c, envID, key, value, envEntry.Path, creds.Token); err != nil {
 						ui.PrintError(fmt.Errorf("failed to create variable %s: %w", key, err))
 					} else {
-						fmt.Printf("  Created %s\n", key)
+						ui.PrintSuccess(fmt.Sprintf("  Created %s", key))
 					}
 				}
 			}

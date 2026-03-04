@@ -25,7 +25,7 @@ var loadCmd = &cobra.Command{
 
 		ui.PrintSuccess(fmt.Sprintf("Found %d .env files:", len(envEntries)))
 		for _, e := range envEntries {
-			fmt.Printf("  + %s (%s)\n", e.Name, e.Path)
+			ui.PrintSuccess(fmt.Sprintf("%s (%s)", e.Name, e.Path))
 		}
 		ui.PrintSuccess("Run 'envm push' to sync these to the server.")
 	},
