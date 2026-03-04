@@ -16,7 +16,7 @@ trap restore_stash EXIT
 
 # Format Check (gofmt)
 echo "Running gofmt..."
-GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
 
 if [ -n "$GO_FILES" ]; then
     UNFORMATTED=$(gofmt -l $GO_FILES)
