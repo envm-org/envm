@@ -30,5 +30,8 @@
 	"homepage": "https://envm.vercel.app",
 	"devDependencies": {
 		"esbuild": "^0.27.3"
+	},
+	"dependencies": {
+		"tar": "^7.4.3"
 	}
 }
