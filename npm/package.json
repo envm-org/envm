@@ -1,6 +1,6 @@
 {
 	"name": "envm-org-cli",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Secure, Simple, Synchronized Environment Management",
 	"main": "dist/index.js",
 	"bin": {
