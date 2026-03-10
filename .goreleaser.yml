@@ -4,8 +4,7 @@ project_name: envm
 
 before:
   hooks:
-    - go mod tidy
-    - go generate ./...
+    - sh -c "cd cli && go mod tidy"
 
 builds:
   - id: envm-cli
@@ -14,6 +13,10 @@ builds:
     binary: envm
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X 'github.com/envm-org/cli/cmd.DefaultAPIURL={{ .Env.API_URL }}'
+      - -X 'github.com/envm-org/cli/cmd.Version={{ .Version }}'
     goos:
       - linux
       - darwin

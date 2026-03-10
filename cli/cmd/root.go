@@ -12,15 +12,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+// DefaultAPIURL and Version are overridden at build time via ldflags:
+//
+//	-X 'github.com/envm-org/cli/cmd.DefaultAPIURL=https://envm.onrender.com'
+//	-X 'github.com/envm-org/cli/cmd.Version=0.0.1'
 var (
 	cfgFile string
 
 	DefaultAPIURL = "http://localhost:8080"
+	Version       = "dev"
 
 	rootCmd = &cobra.Command{
-		Use:     "envm",
-		Short:   "Command line interface for envm",
-		Version: "v.0.0.1", // TODO: Read this from build flags or a version file
+		Use:   "envm",
+		Short: "Command line interface for envm",
 		// PersistentPreRunE is called after flags are parsed but before the
 		// command's RunE function is called.
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -33,6 +37,9 @@ var (
 )
 
 func Execute() {
+	// Set version here so the ldflags-injected value is always picked up.
+	// Assigning in the struct literal captures the zero-value before ldflags runs.
+	rootCmd.Version = Version
 	ui.SetupCobraHelp(rootCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
