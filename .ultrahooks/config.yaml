@@ -1,0 +1,7 @@
+hooks:
+    pre-commit:
+        commands:
+            - name: Check formatting
+              run: make fmt
+            - name: Check linting
+              run: make lint
