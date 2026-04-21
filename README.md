@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/envm-org/envm/blob/dev/assets/logo.png?raw=true" alt="ENVM Logo" width="200"/>
+  <img src="https://github.com/envm-org/envm/blob/main/assets/logo.png?raw=true" alt="ENVM Logo" width="200"/>
 
 </p>
 
