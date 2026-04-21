@@ -31,10 +31,10 @@ func main() {
 
 	addr := env.GetString("ADDR", ":8080")
 	cfg := Config{
-		DatabaseURI:   env.GetString("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/envm"),
+		DatabaseURI:   env.GetString("DATABASE_URI", ""),
 		Addr:          addr,
-		TokenSecret:   env.GetString("TOKEN_SECRET", "12345678901234567890123456789012"),
-		EncryptionKey: env.GetString("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"),
+		TokenSecret:   env.GetString("TOKEN_SECRET", ""),
+		EncryptionKey: env.GetString("ENCRYPTION_KEY", ""),
 	}
 	cfg.DB.DSN = cfg.DatabaseURI
 
