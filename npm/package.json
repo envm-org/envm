@@ -29,7 +29,7 @@
 	},
 	"homepage": "https://envm.vercel.app",
 	"devDependencies": {
-		"esbuild": "^0.27.3"
+		"esbuild": "^0.28.1"
 	},
 	"dependencies": {
 		"tar": "^7.4.3"
